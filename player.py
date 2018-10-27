@@ -30,8 +30,12 @@ class RandomPlayer(Player):
 
 class HumanPlayer(Player):
     def move(self, board):
-        i_move = input("Insert move (0-8)")
+        i_move = -1
         while i_move not in range(9):
-            i_move = input("Inset move (0-8)")
+            try:
+                i_move = int(input("Insert move (0-8)"))
+            except e:
+                pass
+        print()
         return i_move
 
