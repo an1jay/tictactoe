@@ -30,7 +30,8 @@ class TicTacToe:
                     self.players[p].reward(self.REWARDS[1])
                     gameGoing = False
                     self.smartPrint("Illegal move!\n")
-                    self.boardPrint()
+                    if self.VERBOSE:
+                        self.boardPrint()
                     break
                 else:
                     self.board[p, move] = 1
@@ -41,14 +42,16 @@ class TicTacToe:
                     self.players[1 - winner].reward(self.REWARDS[1])
                     gameGoing = False
                     self.smartPrint(self.players[winner].__class__.__name__ + " (player " + str(winner+1) + ", " + ['X', 'O'][winner] + ") won!")
-                    self.boardPrint()
+                    if self.VERBOSE:
+                        self.boardPrint()
                     break
                 elif isover and winner is None:
                     for player in self.players:
                         player.reward(self.REWARDS[2])
                     gameGoing = False
                     self.smartPrint("Tie!")
-                    self.boardPrint()
+                    if self.VERBOSE:
+                        self.boardPrint()
                     break
                 else:
                     self.players[p].reward(self.REWARDS[3])
