@@ -17,23 +17,23 @@ if __name__ == "__main__":
     if not os.path.isfile(filename):
         filename = generateExamples(int(1e5))
     e = Evaluator(
-        (64, "tanh", 64, "tanh", 1), loss="mean_squared_error", optimizer="adam"
+        (64, "tanh", 16, "tanh", 1), loss="mean_absolute_percentage_error", optimizer="adam"
     )
     f = Evaluator(
         (64, "tanh", 64, "tanh", 1), loss="mean_absolute_error", optimizer="adam"
     )
     g = Evaluator(
-        (27, "tanh", 27, "tanh", 27, "tanh", 1), loss="mean_absolute_error", optimizer="adam"
+        (9, "relu", 9, "relu", 9, "relu", 1), loss="mean_absolute_percentage_error", optimizer="adam"
     )
     h = Evaluator(
-        (9, "tanh", 9, "tanh", 9, "tanh", 1), loss="mean_absolute_error", optimizer="adam"
+        (9, "tanh", 9, "tanh", 9, "tanh", 1), loss="mean_absolute_percentage_error", optimizer="adam"
     )
 
     aiplayers = []
     for ev in [e, f, g, h]:
         if not os.path.isfile(ev.filename()):
             ev.load_data(filename)
-            ev.fit(epochs = 3, batch_size = 256)
+            ev.fit(epochs = 5, batch_size = 256)
             ev.save_model()
         else:
             ev.load_model(ev.filename())
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     s = SophisticatedRandomPlayer()
     for p in aiplayers:
         m = Match(p, s)
-        print("\nMatch 1: ", m.play(2000))
+        print("\nMatch: {} \n".format(p.evaluator.name()), m.play(1000))
     
 
     keras.backend.clear_session()
