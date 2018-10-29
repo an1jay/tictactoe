@@ -21,10 +21,10 @@ if __name__ == "__main__":
     if not os.path.isfile(filename):
         filename = generateExamples(int(1e5))
     e = Evaluator(
-        (30, "relu", 27, "tanh", 1), loss="mean_squared_error", optimizer="adam"
+        (30, "tanh", 27, "tanh", 1), loss="mean_squared_error", optimizer="adam"
     )
     f = Evaluator(
-        (30, "relu", 27, "tanh", 1, "tanh"), loss="mean_squared_error", optimizer="adam"
+        (30, "tanh", 27, "tanh", 1, "tanh"), loss="mean_squared_error", optimizer="adam"
     )
 
     for ev in [e, f]:
