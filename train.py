@@ -9,11 +9,13 @@ import numpy as np
 class Evaluator:
     def __init__(self):
         self.model = Sequential()
-        self.model.add(Dense(64, input_shape=(18,)))
+        self.model.add(Dense(27, input_shape=(18,)))
+        self.model.add(Activation("tanh"))
+        self.model.add(Dense(27))
+        self.model.add(Activation("tanh"))
+        self.model.add(Dense(27))
         self.model.add(Activation("tanh"))
         self.model.add(Dense(1))
-        self.model.add(Activation("tanh"))
-
         self.model.compile(loss="mean_squared_error", optimizer="adam")
 
     def load_data(self, filename):
