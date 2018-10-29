@@ -1,11 +1,6 @@
 import os
 import numpy as np
 import time
-
-try:
-    import keras
-except e:
-    pass
 # from generate import generateExamples
 from game import TicTacToe
 from match import Match
@@ -14,34 +9,40 @@ from player import HumanPlayer
 from player import RandomPlayer
 from player import SophisticatedRandomPlayer
 from progress import progress
+from tensorflow import keras
 from train import Evaluator
 
 if __name__ == "__main__":
-    filename = "example_100k.pkl"
+    filename = "balanced_example_150k.pkl"
     if not os.path.isfile(filename):
         filename = generateExamples(int(1e5))
     e = Evaluator(
-        (30, "tanh", 27, "tanh", 1), loss="mean_squared_error", optimizer="adam"
+        (64, "tanh", 64, "tanh", 1), loss="mean_squared_error", optimizer="adam"
     )
     f = Evaluator(
-        (30, "tanh", 27, "tanh", 1, "tanh"), loss="mean_squared_error", optimizer="adam"
+        (64, "tanh", 64, "tanh", 1), loss="mean_absolute_error", optimizer="adam"
+    )
+    g = Evaluator(
+        (27, "tanh", 27, "tanh", 27, "tanh", 1), loss="mean_absolute_error", optimizer="adam"
+    )
+    h = Evaluator(
+        (9, "tanh", 9, "tanh", 9, "tanh", 1), loss="mean_absolute_error", optimizer="adam"
     )
 
-    for ev in [e, f]:
+    aiplayers = []
+    for ev in [e, f, g, h]:
         if not os.path.isfile(ev.filename()):
             ev.load_data(filename)
-            ev.fit()
+            ev.fit(epochs = 3, batch_size = 256)
             ev.save_model()
         else:
             ev.load_model(ev.filename())
-
-    scores = np.zeros((2, 3))
-    be = BasicAIPlayer(e)
-    bf = BasicAIPlayer(f)
+        aiplayers.append(BasicAIPlayer(ev))
+        
     s = SophisticatedRandomPlayer()
-    m1 = Match(be, s)
-    m2 = Match(bf, s)
-    print("\nMatch 1: ", m1.play(100))
-    print("\nMatch 2: ", m2.play(100))
+    for p in aiplayers:
+        m = Match(p, s)
+        print("\nMatch 1: ", m.play(2000))
+    
 
     keras.backend.clear_session()

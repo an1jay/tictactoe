@@ -16,3 +16,12 @@
  * TensorFlow & Keras
  * NumPy
  * Uses progress.py by vladignatyev (https://gist.github.com/vladignatyev/06860ec2040cb497f0f3)
+
+#### To do
+ * Create data and network folders
+ * Generate numpy array instead of list of arrays
+ * Named tuple for rewards for Q learning
+ * Create Q learning, Minimax and other AI players
+ * Create Tournament class
+ * Hard code a manual AI
+ * GUI

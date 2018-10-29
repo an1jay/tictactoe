@@ -9,7 +9,7 @@ import numpy as np
 class Evaluator:
     def __init__(self, architecture, loss, optimizer):
         self.architecture = architecture
-
+        self.loss = loss
         self.model = Sequential()
         self.model.add(Dense(architecture[0], input_shape=(18,)))
 
@@ -44,7 +44,7 @@ class Evaluator:
         return self.model.predict(board.reshape((1, 18)))[0][0]
 
     def name(self):
-        return "-".join([str(l) for l in self.architecture])
+        return "-".join([str(l) for l in self.architecture]+[self.loss])
 
     def filename(self):
         return self.name() + ".h5"
