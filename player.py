@@ -51,26 +51,25 @@ class HumanPlayer(Player):
                 pass
         print()
         return i_move
-        
-        
-        
+
+
 class BasicAIPlayer(Player):
     def __init__(self, ev):
         self.evaluator = ev
-    
-    
+
     def move(self, board):
-        
         def getBestMove(b, e, p2tomove):
-            illegal_moves = (b[0]+b[1])
+            illegal_moves = b[0] + b[1]
             move_scores = np.zeros(9)
             for move in range(9):
-                move_array = np.zeros((1,18))
-                move_array[:,9*p2tomove+move] = 1
-                move_scores[move] = np.absolute(e.evaluate(b.reshape((1, 18)) + move_array))
-            return np.argmax(move_scores - illegal_moves)   
-        
-        if np.sum(board[0]) > np.sum(board[1]):      
-             return getBestMove(board, self.evaluator, True)
-        else: 
+                move_array = np.zeros((1, 18))
+                move_array[:, 9 * p2tomove + move] = 1
+                move_scores[move] = np.absolute(
+                    e.evaluate(b.reshape((1, 18)) + move_array)
+                )
+            return np.argmax(move_scores - illegal_moves)
+
+        if np.sum(board[0]) > np.sum(board[1]):
+            return getBestMove(board, self.evaluator, True)
+        else:
             return getBestMove(board, self.evaluator, False)

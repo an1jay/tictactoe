@@ -14,12 +14,12 @@ class TicTacToe:
         if self.RECORDGAME:
             self.gameHistory = [np.array(self.board[:])]
 
-    def isLegalMove(self, move):  
+    def isLegalMove(self, move):
         # call before making a move
         return (self.board[0] + self.board[1])[move] == 0
 
-    def play(self): 
-        #returns 1 in p1 wins, -1 if p2 wins, 0 if tie
+    def play(self):
+        # returns 1 in p1 wins, -1 if p2 wins, 0 if tie
         for player in self.players:
             player.startGame()
 

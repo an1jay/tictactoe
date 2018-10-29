@@ -9,10 +9,10 @@ import numpy as np
 class Evaluator:
     def __init__(self, architecture, loss, optimizer):
         self.architecture = architecture
-        
+
         self.model = Sequential()
         self.model.add(Dense(architecture[0], input_shape=(18,)))
-        
+
         for layer in architecture:
             if isinstance(layer, str):
                 self.model.add(Activation(layer))
@@ -25,7 +25,8 @@ class Evaluator:
         with open(filename, "rb") as f:
             x, y = pickle.load(f)
         self.x_train = np.concatenate(
-            list(map(lambda a: a.reshape((1, 18)), x)), axis=0)
+            list(map(lambda a: a.reshape((1, 18)), x)), axis=0
+        )
         self.y_train = np.array(y)
 
     def load_model(self, filename):
@@ -38,12 +39,12 @@ class Evaluator:
         model_name = self.filename()
         self.model.save(model_name)
         return model_name
-        
+
     def evaluate(self, board):
         return self.model.predict(board.reshape((1, 18)))[0][0]
 
     def name(self):
-        return '-'.join([str(l) for l in self.architecture])
-        
+        return "-".join([str(l) for l in self.architecture])
+
     def filename(self):
-        return self.name() + '.h5'
+        return self.name() + ".h5"
