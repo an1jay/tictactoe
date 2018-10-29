@@ -1,6 +1,7 @@
 import numpy as np
 import random
 
+
 class Player:
     def __init__(self):
         pass
@@ -25,17 +26,20 @@ class QLearningPlayer(Player):
     def reward(self):
         pass
 
+
 class RandomPlayer(Player):
     def move(self, board):
         return np.random.randint(9)
+
 
 class SophisticatedRandomPlayer(Player):
     def move(self, board):
         choices = []
         for i in range(9):
-            if board[0,i]+board[1,i] == 0:
+            if board[0, i] + board[1, i] == 0:
                 choices.append(i)
         return random.choice(choices)
+
 
 class HumanPlayer(Player):
     def move(self, board):
@@ -47,4 +51,3 @@ class HumanPlayer(Player):
                 pass
         print()
         return i_move
-

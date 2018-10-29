@@ -63,7 +63,7 @@ class TicTacToe:
                     )
                     if self.VERBOSE:
                         self.boardPrint()
-                    return 1-2 * winner
+                    return 1 - 2 * winner
                 elif isover and winner is None:
                     for player in self.players:
                         player.reward(self.REWARDS[2])
