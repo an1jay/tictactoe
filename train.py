@@ -44,7 +44,7 @@ class Evaluator:
         return self.model.predict(board.reshape((1, 18)))[0][0]
 
     def name(self):
-        return "-".join([str(l) for l in self.architecture]+[self.loss])
+        return "-".join([str(l) for l in self.architecture] + [self.loss])
 
     def filename(self):
         return self.name() + ".h5"
