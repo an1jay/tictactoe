@@ -40,7 +40,10 @@ def generateBalancedExamples(numGames):
     train = zip(x_train, y_train)
     remove_prob = np.sum(y_train) / np.sum(np.array(y_train) == 1)
     filtered_train = list(
-        filter(lambda x: not (np.random.random() < remove_prob and x[1] == 1), train)
+        filter(
+            lambda x: not (np.random.random() < remove_prob and x[1] == 1),
+            train,
+        )
     )
 
     balanced_x, balanced_y = zip(*filtered_train)

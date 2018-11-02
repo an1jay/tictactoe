@@ -23,7 +23,9 @@ if __name__ == "__main__":
         optimizer="adam",
     )
     f = Evaluator(
-        (64, "tanh", 64, "tanh", 1), loss="mean_absolute_error", optimizer="adam"
+        (64, "tanh", 64, "tanh", 1),
+        loss="mean_absolute_error",
+        optimizer="adam",
     )
     g = Evaluator(
         (9, "relu", 9, "relu", 9, "relu", 1),

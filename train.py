@@ -33,7 +33,9 @@ class Evaluator:
         self.model = load_model(filename)
 
     def fit(self, epochs=3, batch_size=32):
-        self.model.fit(self.x_train, self.y_train, epochs=epochs, batch_size=batch_size)
+        self.model.fit(
+            self.x_train, self.y_train, epochs=epochs, batch_size=batch_size
+        )
 
     def save_model(self):
         model_name = self.filename()

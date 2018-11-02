@@ -3,14 +3,21 @@ import numpy as np
 
 class TicTacToe:
     def __init__(
-        self, player1, player2, verbose, rewards=(1, -1, 0.5, 0), recordGame=False
+        self,
+        player1,
+        player2,
+        verbose,
+        rewards=(1, -1, 0.5, 0),
+        recordGame=False,
     ):
         self.players = [player1, player2]
         self.REWARDS = rewards  # tuple (win, loss, draw, inbetweenmove)
         # make named tuple
         self.RECORDGAME = recordGame
         self.VERBOSE = verbose
-        self.board = np.zeros((2, 9))  # 1st row is player 1, 2nd row is player 2
+        self.board = np.zeros(
+            (2, 9)
+        )  # 1st row is player 1, 2nd row is player 2
         if self.RECORDGAME:
             self.gameHistory = [np.array(self.board[:])]
 

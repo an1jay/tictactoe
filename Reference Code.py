@@ -96,7 +96,9 @@ class HumanPlayer(Player):
 
 
 class QLearnerPlayer(Player):
-    def __init__(self, verbose=False, epsilon=0.4, alpha=0.3, gamma=0.9, defaultQ=1):
+    def __init__(
+        self, verbose=False, epsilon=0.4, alpha=0.3, gamma=0.9, defaultQ=1
+    ):
         self.VERBOSE = verbose
         self.EPSILON = epsilon  # chance of random exploration
         self.ALPHA = alpha  # discount factor for future reward
@@ -148,7 +150,9 @@ class QLearnerPlayer(Player):
         maxQValue = max(QValues)
         # If multiple best actions, choose one at random
         if QValues.count(maxQValue) > 1:
-            bestActions = [i for i in range(len(actions)) if QValues[i] == maxQValue]
+            bestActions = [
+                i for i in range(len(actions)) if QValues[i] == maxQValue
+            ]
             bestMove = actions[random.choice(bestActions)]
         # If only one best action, choose that
         else:
