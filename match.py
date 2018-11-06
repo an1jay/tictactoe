@@ -16,7 +16,7 @@ class Match:
             result = np.zeros(3)
             for g in range(numG):
                 if g % (numGames // 50) == 0:
-                    progress(games + g, numGames, status='Road to 4k TTT MMR')
+                    progress(games + g, numGames, status="Road to 4k TTT MMR")
                 t = TicTacToe(p1, p2, verbose=False)
                 winner = t.play()
                 result[winner + 1] += 1

@@ -1,7 +1,8 @@
 import collections
 import numpy as np
 
-Reward = collections.namedtuple('Reward', ['win', 'loss', 'tie', 'endofmove'])
+Reward = collections.namedtuple("Reward", ["win", "loss", "tie", "endofmove"])
+
 
 class TicTacToe:
     def __init__(
@@ -34,11 +35,11 @@ class TicTacToe:
             player.startGame()
 
         self.smartPrint(
-            'Match between '
+            "Match between "
             + self.players[0].__class__.__name__
-            + ' (player 1, \'X\') and '
+            + " (player 1, 'X') and "
             + self.players[1].__class__.__name__
-            + ' (player 2, \'O\').'
+            + " (player 2, 'O')."
         )
         gameGoing = True
         while gameGoing:
@@ -47,12 +48,12 @@ class TicTacToe:
             for p in range(len(self.players)):
                 move = self.players[p].move(self.board)
                 self.smartPrint(
-                    self.players[p].__class__.__name__ + ' played ' + str(move)
+                    self.players[p].__class__.__name__ + " played " + str(move)
                 )
                 if not self.isLegalMove(move):
                     self.players[p].reward(self.REWARDS.loss)
                     gameGoing = False
-                    self.smartPrint('Illegal move!\n')
+                    self.smartPrint("Illegal move!\n")
                     if self.VERBOSE:
                         self.boardPrint()
                     return 1 - 2 * p
@@ -67,11 +68,11 @@ class TicTacToe:
                     gameGoing = False
                     self.smartPrint(
                         self.players[winner].__class__.__name__
-                        + ' (player '
+                        + " (player "
                         + str(winner + 1)
-                        + ', '
-                        + ['X', 'O'][winner]
-                        + ') won!'
+                        + ", "
+                        + ["X", "O"][winner]
+                        + ") won!"
                     )
                     if self.VERBOSE:
                         self.boardPrint()
@@ -80,7 +81,7 @@ class TicTacToe:
                     self.players[0].reward(self.REWARDS.tie)
                     self.players[1].reward(self.REWARDS.tie)
                     gameGoing = False
-                    self.smartPrint('Tie!')
+                    self.smartPrint("Tie!")
                     if self.VERBOSE:
                         self.boardPrint()
                     return 0
@@ -107,21 +108,21 @@ class TicTacToe:
         else:
             return False, None
 
-    def smartPrint(self, x, ending='\n'):
+    def smartPrint(self, x, ending="\n"):
         if self.VERBOSE:
             print(x, end=ending)
 
-    def boardPrint(self, msg=''):
+    def boardPrint(self, msg=""):
         print(msg)
         strbrd = []
         for x, o in zip(self.board[0], self.board[1]):
             if x:
-                char = 'X'
+                char = "X"
             elif o:
-                char = 'O'
+                char = "O"
             else:
-                char = ' '
+                char = " "
             strbrd.append(char)
-        print('|'.join(strbrd[:3]))
-        print('|'.join(strbrd[3:6]))
-        print('|'.join(strbrd[6:]))
+        print("|".join(strbrd[:3]))
+        print("|".join(strbrd[3:6]))
+        print("|".join(strbrd[6:]))

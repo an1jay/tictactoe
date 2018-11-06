@@ -19,9 +19,11 @@ def generateExamples(numGames):
         x_train.extend(t.gameHistory)
         y_train.extend([result] * len(t.gameHistory))
         if i % 1000 == 0:
-            progress(i, numGames, status='Generating games')
-    filename = os.path.join('data', f'unbalanced_example_{numGames // 1000}k.pbz2')
-    with open(filename, 'wb') as f:
+            progress(i, numGames, status="Generating games")
+    filename = os.path.join(
+        "data", f"unbalanced_example_{numGames // 1000}k.pbz2"
+    )
+    with open(filename, "wb") as f:
         pickle.dump((x_train, y_train), f)
     return filename
 
@@ -36,8 +38,10 @@ def generateBalancedExamples(numGames):
         x_train.extend(t.gameHistory)
         y_train.extend([result] * len(t.gameHistory))
         if i % 1000 == 0:
-            progress(i, numGames, status='Generating games')
-    filename = os.path.join('data', f'balanced_example_{numGames // 1000}k.pbz2')
+            progress(i, numGames, status="Generating games")
+    filename = os.path.join(
+        "data", f"balanced_example_{numGames // 1000}k.pbz2"
+    )
 
     train = zip(x_train, y_train)
     remove_prob = np.sum(y_train) / np.sum(np.array(y_train) == 1)
@@ -50,9 +54,9 @@ def generateBalancedExamples(numGames):
 
     balanced_x, balanced_y = zip(*filtered_train)
 
-    with bz2.open(filename, 'wb') as f:
+    with bz2.open(filename, "wb") as f:
         pickle.dump((balanced_x, balanced_y), f)
     return filename
 
 
-generateBalancedExamples(1_000)
+generateBalancedExamples(1000)

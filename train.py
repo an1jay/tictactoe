@@ -22,7 +22,7 @@ class Evaluator:
         self.model.compile(loss=loss, optimizer=optimizer)
 
     def load_data(self, filename):
-        with bz2.open(filename, 'rb') as f:
+        with bz2.open(filename, "rb") as f:
             x, y = pickle.load(f)
         self.x_train = np.concatenate(
             list(map(lambda a: a.reshape((1, 18)), x)), axis=0
@@ -46,7 +46,7 @@ class Evaluator:
         return self.model.predict(board.reshape((1, 18)))[0][0]
 
     def name(self):
-        return '-'.join([str(l) for l in self.architecture] + [self.loss])
+        return "-".join([str(l) for l in self.architecture] + [self.loss])
 
     def filename(self):
-        return os.path.join('model', self.name() + '.h5')
+        return os.path.join("model", self.name() + ".h5")
