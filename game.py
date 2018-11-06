@@ -1,5 +1,7 @@
+import collections
 import numpy as np
 
+Reward = collections.namedtuple('Reward', ['win', 'loss', 'tie', 'endofmove'])
 
 class TicTacToe:
     def __init__(
@@ -11,7 +13,8 @@ class TicTacToe:
         recordGame=False,
     ):
         self.players = [player1, player2]
-        self.REWARDS = rewards  # tuple (win, loss, draw, inbetweenmove)
+        self.REWARDS = Reward(*rewards)
+        # tuple (win, loss, draw, inbetweenmove)
         # make named tuple
         self.RECORDGAME = recordGame
         self.VERBOSE = verbose
@@ -31,11 +34,11 @@ class TicTacToe:
             player.startGame()
 
         self.smartPrint(
-            "Match between "
+            'Match between '
             + self.players[0].__class__.__name__
-            + " (player 1, 'X') and "
+            + ' (player 1, \'X\') and '
             + self.players[1].__class__.__name__
-            + " (player 2, 'O')."
+            + ' (player 2, \'O\').'
         )
         gameGoing = True
         while gameGoing:
@@ -44,12 +47,12 @@ class TicTacToe:
             for p in range(len(self.players)):
                 move = self.players[p].move(self.board)
                 self.smartPrint(
-                    self.players[p].__class__.__name__ + " played " + str(move)
+                    self.players[p].__class__.__name__ + ' played ' + str(move)
                 )
                 if not self.isLegalMove(move):
-                    self.players[p].reward(self.REWARDS[1])
+                    self.players[p].reward(self.REWARDS.loss)
                     gameGoing = False
-                    self.smartPrint("Illegal move!\n")
+                    self.smartPrint('Illegal move!\n')
                     if self.VERBOSE:
                         self.boardPrint()
                     return 1 - 2 * p
@@ -59,30 +62,30 @@ class TicTacToe:
                         self.gameHistory.append(np.array(self.board[:]))
                 isover, winner = self.isGameOver()
                 if isover and (not winner is None):
-                    self.players[winner].reward(self.REWARDS[0])
-                    self.players[1 - winner].reward(self.REWARDS[1])
+                    self.players[winner].reward(self.REWARDS.win)
+                    self.players[1 - winner].reward(self.REWARDS.loss)
                     gameGoing = False
                     self.smartPrint(
                         self.players[winner].__class__.__name__
-                        + " (player "
+                        + ' (player '
                         + str(winner + 1)
-                        + ", "
-                        + ["X", "O"][winner]
-                        + ") won!"
+                        + ', '
+                        + ['X', 'O'][winner]
+                        + ') won!'
                     )
                     if self.VERBOSE:
                         self.boardPrint()
                     return 1 - 2 * winner
                 elif isover and winner is None:
-                    for player in self.players:
-                        player.reward(self.REWARDS[2])
+                    self.players[0].reward(self.REWARDS.tie)
+                    self.players[1].reward(self.REWARDS.tie)
                     gameGoing = False
-                    self.smartPrint("Tie!")
+                    self.smartPrint('Tie!')
                     if self.VERBOSE:
                         self.boardPrint()
                     return 0
                 else:
-                    self.players[p].reward(self.REWARDS[3])
+                    self.players[p].reward(self.REWARDS.endofmove)
 
     def isGameOver(self):
         winconditions = [
@@ -104,21 +107,21 @@ class TicTacToe:
         else:
             return False, None
 
-    def smartPrint(self, x, ending="\n"):
+    def smartPrint(self, x, ending='\n'):
         if self.VERBOSE:
             print(x, end=ending)
 
-    def boardPrint(self, msg=""):
+    def boardPrint(self, msg=''):
         print(msg)
         strbrd = []
         for x, o in zip(self.board[0], self.board[1]):
             if x:
-                char = "X"
+                char = 'X'
             elif o:
-                char = "O"
+                char = 'O'
             else:
-                char = " "
+                char = ' '
             strbrd.append(char)
-        print("|".join(strbrd[:3]))
-        print("|".join(strbrd[3:6]))
-        print("|".join(strbrd[6:]))
+        print('|'.join(strbrd[:3]))
+        print('|'.join(strbrd[3:6]))
+        print('|'.join(strbrd[6:]))

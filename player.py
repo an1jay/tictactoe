@@ -46,7 +46,7 @@ class HumanPlayer(Player):
         i_move = -1
         while i_move not in range(9):
             try:
-                i_move = int(input("Insert move (0-8)"))
+                i_move = int(input('Insert move (0-8)'))
             except e:
                 pass
         print()
