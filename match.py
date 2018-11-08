@@ -4,9 +4,10 @@ from progress import progress
 
 
 class Match:
-    def __init__(self, p1, p2):
+    def __init__(self, p1, p2, verbose):
         self.p1 = p1
         self.p2 = p2
+        self.VERBOSE = verbose
 
     def play(self, numGames):
         score = np.zeros((2, 3))
@@ -15,9 +16,9 @@ class Match:
         def playHalf(p1, p2, numG, games):
             result = np.zeros(3)
             for g in range(numG):
-                if g % (numGames // 50) == 0:
-                    progress(games + g, numGames, status="Road to 4k TTT MMR")
-                t = TicTacToe(p1, p2, verbose=False)
+                if g % int(.2*numGames) == 0:
+                    progress(games + g, numGames, status="Playing Games")
+                t = TicTacToe(p1, p2, verbose=self.VERBOSE)
                 winner = t.play()
                 result[winner + 1] += 1
             return result

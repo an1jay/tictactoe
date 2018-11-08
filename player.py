@@ -10,6 +10,7 @@ class Player:
         pass
 
     def reward(self, value):
+        # print(self.__class__.__name__, "has been rewarded", value)
         pass
 
     def startGame(self):
@@ -22,10 +23,6 @@ class QLearningPlayer(Player):
 
     def move(self):
         pass
-
-    def reward(self):
-        pass
-
 
 class RandomPlayer(Player):
     def move(self, board):
@@ -59,13 +56,13 @@ class BasicAIPlayer(Player):
 
     def move(self, board):
         p2tomove = np.sum(board[0]) > np.sum(board[1])
-        illegal_moves = b[0] + b[1]
+        illegal_moves = board[0] + board[1]
         move_scores = np.zeros(9)
         for move in range(9):
             move_array = np.zeros((1, 18))
             move_array[:, 9 * p2tomove + move] = 1
             move_scores[move] = np.absolute(
-               self.evaluator.evaluate(b.reshape((1, 18)) + move_array)
+               self.evaluator.evaluate(board.reshape((1, 18)) + move_array)
             )
         return np.argmax(move_scores - illegal_moves)
 

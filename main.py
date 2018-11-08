@@ -16,43 +16,15 @@ from tensorflow import keras
 from train import Evaluator
 
 if __name__ == "__main__":
-    filename = os.path.join("data", "balanced_example_1k.pbz2")
-    if not os.path.isfile(filename):
-        filename = generateExamples(int(1e3))
-    e = Evaluator(
-        (64, "tanh", 16, "tanh", 1),
+    ev = Evaluator(
+        (16, "tanh", 16, "tanh", 1),
         loss="mean_absolute_percentage_error",
         optimizer="adam",
     )
-    f = Evaluator(
-        (64, "tanh", 64, "tanh", 1),
-        loss="mean_absolute_error",
-        optimizer="adam",
-    )
-    g = Evaluator(
-        (9, "relu", 9, "relu", 9, "relu", 1),
-        loss="mean_absolute_percentage_error",
-        optimizer="adam",
-    )
-    h = Evaluator(
-        (9, "tanh", 9, "tanh", 9, "tanh", 1),
-        loss="mean_absolute_percentage_error",
-        optimizer="adam",
-    )
-
-    aiplayers = []
-    for ev in [e, f, g, h]:
-        if not os.path.isfile(ev.filename()):
-            print("Found Files")
-            ev.load_data(filename)
-            ev.fit(epochs=5, batch_size=256)
-            ev.save_model()
-        else:
-            ev.load_model(ev.filename())
-        aiplayers.append(BasicMMAIPlayer(ev))
-
-    s = SophisticatedRandomPlayer()
-    for p in aiplayers:
-        m = Match(p, s)
-        print("\nMatch: {} \n".format(p.evaluator.name()), m.play(1000))
+    ev.load_model(ev.filename())
+    b = BasicMMAIPlayer(ev)
+    s = BasicAIPlayer(ev)
+    # s = SophisticatedRandomPlayer()
+    m = Match(b, s, True)
+    print(m.play(10))
     keras.backend.clear_session()

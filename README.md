@@ -18,8 +18,14 @@
  * Uses progress.py by vladignatyev (https://gist.github.com/vladignatyev/06860ec2040cb497f0f3)
 
 #### To do
+ * MinMax Player:
+    * Change Board to (2, 3, 3)
+    * Arbitrary Depth
+ * Change board logic
+ * Convultional Network
+ * Train on Illegals
+##### Later stuff
  * Generate numpy array instead of list of arrays
  * Create Q learning, Minimax and other AI players
- * Create Tournament class
  * Hard code a manual AI
  * GUI

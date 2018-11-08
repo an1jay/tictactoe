@@ -56,7 +56,7 @@ class TicTacToe:
                     self.smartPrint("Illegal move!\n")
                     if self.VERBOSE:
                         self.boardPrint()
-                    return 1 - 2 * p
+                    return 2 * p -1
                 else:
                     self.board[p, move] = 1
                     if self.RECORDGAME:

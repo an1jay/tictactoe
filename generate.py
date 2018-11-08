@@ -57,6 +57,3 @@ def generateBalancedExamples(numGames):
     with bz2.open(filename, "wb") as f:
         pickle.dump((balanced_x, balanced_y), f)
     return filename
-
-
-generateBalancedExamples(1000)
