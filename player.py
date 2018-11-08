@@ -58,7 +58,24 @@ class BasicAIPlayer(Player):
         self.evaluator = ev
 
     def move(self, board):
-        def getBestMove(b, e, p2tomove):
+        p2tomove = np.sum(board[0]) > np.sum(board[1])
+        illegal_moves = b[0] + b[1]
+        move_scores = np.zeros(9)
+        for move in range(9):
+            move_array = np.zeros((1, 18))
+            move_array[:, 9 * p2tomove + move] = 1
+            move_scores[move] = np.absolute(
+               self.evaluator.evaluate(b.reshape((1, 18)) + move_array)
+            )
+        return np.argmax(move_scores - illegal_moves)
+
+class BasicMMAIPlayer(Player):
+    def __init__(self, ev):
+        self.evaluator = ev
+
+    def move(self, board):
+        def valueFunc(b, e):
+            p2tomove = np.sum(board[0]) > np.sum(board[1])
             illegal_moves = b[0] + b[1]
             move_scores = np.zeros(9)
             for move in range(9):
@@ -67,9 +84,18 @@ class BasicAIPlayer(Player):
                 move_scores[move] = np.absolute(
                     e.evaluate(b.reshape((1, 18)) + move_array)
                 )
-            return np.argmax(move_scores - illegal_moves)
+            return move_scores - illegal_moves
 
-        if np.sum(board[0]) > np.sum(board[1]):
-            return getBestMove(board, self.evaluator, True)
-        else:
-            return getBestMove(board, self.evaluator, False)
+        def twoDminimax(b, e):
+            moves = np.zeros(9)
+            p2tomove = np.sum(board[0]) > np.sum(board[1])
+            for move in range(9):
+                move_array = np.ones((2, 9))
+                move_array[int(p2tomove)][move] = 1
+                if (b[0]+b[1])[move]:
+                    moves[move] = 1000
+                else:
+                    moves[move] = np.max(valueFunc(b + move_array, e))
+            return np.argmin(moves)
+
+        return twoDminimax(board, self.evaluator)

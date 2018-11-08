@@ -7,6 +7,7 @@ from game import TicTacToe
 from generate import generateExamples
 from match import Match
 from player import BasicAIPlayer
+from player import BasicMMAIPlayer
 from player import HumanPlayer
 from player import RandomPlayer
 from player import SophisticatedRandomPlayer
@@ -15,7 +16,7 @@ from tensorflow import keras
 from train import Evaluator
 
 if __name__ == "__main__":
-    filename = os.path.join("data", "balanced_example_250k.pkl")
+    filename = os.path.join("data", "balanced_example_1k.pbz2")
     if not os.path.isfile(filename):
         filename = generateExamples(int(1e3))
     e = Evaluator(
@@ -48,11 +49,10 @@ if __name__ == "__main__":
             ev.save_model()
         else:
             ev.load_model(ev.filename())
-        aiplayers.append(BasicAIPlayer(ev))
+        aiplayers.append(BasicMMAIPlayer(ev))
 
     s = SophisticatedRandomPlayer()
     for p in aiplayers:
         m = Match(p, s)
         print("\nMatch: {} \n".format(p.evaluator.name()), m.play(1000))
-
     keras.backend.clear_session()
