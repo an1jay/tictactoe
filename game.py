@@ -1,31 +1,24 @@
 import collections
 import numpy as np
 
-Reward = collections.namedtuple("Reward", ["win", "loss", "tie", "endofmove"])
+Reward = collections.namedtuple('Reward', ['win', 'loss', 'tie', 'endofmove'])
 
 
 class TicTacToe:
     def __init__(
         self,
-        player1,
-        player2,
+        p1,
+        p2,
         verbose,
         rewards=(1, -1, 0.5, 0),
-        recordGame=False,
     ):
-        self.players = [player1, player2]
+        self.players = [p1, p2]
         self.REWARDS = Reward(*rewards)
         # tuple (win, loss, draw, inbetweenmove)
-        self.RECORDGAME = recordGame
         self.VERBOSE = verbose
-        self.board = np.zeros((2, 3, 3))
-        # 1st dimension = 0 is Player 1; =1 is Player 2
-        if self.RECORDGAME:
-            self.gameHistory = [np.array(self.board)]
-
-    def isLegalMove(self, move):
-        # call before making a move
-        return (self.board[0] + self.board[1])[move] == 0
+        self.board = Board() 
+        # first 9 are player 1, second 9 are player 2, final is whose move it is
+  
 
     def play(self):
         # returns 1 if p1 wins, -1 if p2 wins, 0 if tie
@@ -33,59 +26,97 @@ class TicTacToe:
             player.startGame()
 
         self.smartPrint(
-            "Match between "
+            'Match between '
             + self.players[0].__class__.__name__
-            + " (player 1, 'X') and "
+            + ' (player 1, \'X\') and '
             + self.players[1].__class__.__name__
-            + " (player 2, 'O')."
+            + ' (player 2, \'O\').'
         )
-        gameGoing = True
-        while gameGoing:
-            if self.VERBOSE:
-                self.boardPrint()
-            for p in range(len(self.players)):
+        while True:
+            for p in [0,1]: # for each player
+                self.smartPrint(self.board)
                 move = self.players[p].move(self.board)
                 self.smartPrint(
-                    self.players[p].__class__.__name__ + " played " + str(move)
+                    self.players[p].__class__.__name__ + ' played ' + str(move)
                 )
-                if not self.isLegalMove(move):
+                if not self.board.isLegalMove(move): 
+                # checks if legal move
                     self.players[p].reward(self.REWARDS.loss)
-                    gameGoing = False
-                    self.smartPrint("Illegal move!\n")
-                    if self.VERBOSE:
-                        self.boardPrint()
-                    return 2 * p -1
+                    self.smartPrint('Illegal move!\n')
+                    self.smartPrint(self.board)
+                    return 2 * p - 1
                 else:
-                    self.board[p, move] = 1
-                    if self.RECORDGAME:
-                        self.gameHistory.append(np.array(self.board[:]))
-                isover, winner = self.isGameOver()
+                    self.board.pushMove(move)
+                isover, winner = self.board.isGameOver()
                 if isover and (not winner is None):
                     self.players[winner].reward(self.REWARDS.win)
                     self.players[1 - winner].reward(self.REWARDS.loss)
-                    gameGoing = False
                     self.smartPrint(
                         self.players[winner].__class__.__name__
-                        + " (player "
+                        + ' (player '
                         + str(winner + 1)
-                        + ", "
-                        + ["X", "O"][winner]
-                        + ") won!"
+                        + ', '
+                        + ['X', 'O'][winner]
+                        + ') won!'
                     )
-                    if self.VERBOSE:
-                        self.boardPrint()
+                    self.smartPrint(self.board)
                     return 1 - 2 * winner
                 elif isover and winner is None:
                     self.players[0].reward(self.REWARDS.tie)
                     self.players[1].reward(self.REWARDS.tie)
-                    gameGoing = False
-                    self.smartPrint("Tie!")
-                    if self.VERBOSE:
-                        self.boardPrint()
+                    self.smartPrint('Tie!')
+                    self.smartPrint(self.board)
                     return 0
                 else:
                     self.players[p].reward(self.REWARDS.endofmove)
 
+    def smartPrint(self, x, ending='\n'):
+        if self.VERBOSE:
+            print(x, end=ending)
+
+
+class Board:
+    def __init__(self, b = None):
+        if b is None:
+            self.state = np.zeros(19, dtype = np.dtype('u8')) 
+        else:
+            self.state = b
+        self.previous_state = None
+        self.gameHistory = self.state.copy()
+        
+    def __repr__(self):
+        strbrd = []
+        for x, o in zip(self.state[0:9], self.state[9:18]):
+            if x:
+                char = 'X'
+            elif o:
+                char = 'O'
+            else:
+                char = ' '
+            strbrd.append(char)
+        return '\n'.join(['|'.join(strbrd[:3]), '|'.join(strbrd[3:6]), '|'.join(strbrd[6:])])
+        
+    def pushMove(self, move):
+        player = self.state[18]
+        self.state[int(player) * 9 + move] = 1
+        self.state[18] = 1 - player
+        self.gameHistory = np.vstack([self.gameHistory, self.state])
+    
+    def popMoves(self, movesback):
+        if movesback < self.gameHistory.shape[1]:
+            self.state = self.gameHistory[-movesback-1]
+        else:
+            raise LookupError('popping too many moves')
+            
+    def tryMove(self, move):
+        
+        player = self.state[18]
+        print(player)
+        tempstate = self.state.copy()
+        tempstate[int(player) * 9 + move] = 1
+        tempstate[18] = 1 - player
+        return tempstate
+        
     def isGameOver(self):
         winconditions = [
             (0, 1, 2),
@@ -97,30 +128,20 @@ class TicTacToe:
             (0, 4, 8),
             (2, 4, 6),
         ]
-        for p in range(len(self.players)):
+        for p in [0,1]:
             for win in winconditions:
-                if np.sum([self.board[p, w] for w in win]) == 3:
+                if np.sum([self.state[9*p + w] for w in win]) == 3:
                     return True, p
-        if np.sum(self.board) == 9:
+        if np.sum(self.state[0:19]) == 9:
             return True, None
         else:
-            return False, None
-
-    def smartPrint(self, x, ending="\n"):
-        if self.VERBOSE:
-            print(x, end=ending)
-
-    def boardPrint(self, msg=""):
-        print(msg)
-        strbrd = []
-        for x, o in zip(self.board[0], self.board[1]):
-            if x:
-                char = "X"
-            elif o:
-                char = "O"
-            else:
-                char = " "
-            strbrd.append(char)
-        print("|".join(strbrd[:3]))
-        print("|".join(strbrd[3:6]))
-        print("|".join(strbrd[6:]))
+            return False, None    
+            
+    def isLegalMove(self, move):
+        # returns True if move is legal
+        return (self.state[0:9] + self.state[9:18])[move] == 0
+    
+    def legalMoves(self):
+        # returns list of legal moves
+        return [i for i in range(9) if self.isLegalMove(i)]
+            

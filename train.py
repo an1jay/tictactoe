@@ -13,7 +13,7 @@ class Evaluator:
         self.architecture = architecture
         self.loss = loss
         self.model = Sequential()
-        self.model.add(Dense(architecture[0], input_shape=(18,)))
+        self.model.add(Dense(architecture[0], input_shape=(19,)))
         for layer in architecture:
             if isinstance(layer, str):
                 self.model.add(Activation(layer))
@@ -43,7 +43,7 @@ class Evaluator:
         return model_name
 
     def evaluate(self, board):
-        return self.model.predict(board.reshape((1, 18)))[0][0]
+        return self.model.predict(board)[0,]
 
     def name(self):
         return "-".join([str(l) for l in self.architecture] + [self.loss])

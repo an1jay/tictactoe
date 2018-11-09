@@ -50,23 +50,21 @@ class HumanPlayer(Player):
         return i_move
 
 
-class BasicAIPlayer(Player):
+class PositionalPlayer(Player):
     def __init__(self, ev):
         self.evaluator = ev
-
+    
     def move(self, board):
-        p2tomove = np.sum(board[0]) > np.sum(board[1])
-        illegal_moves = board[0] + board[1]
-        move_scores = np.zeros(9)
-        for move in range(9):
-            move_array = np.zeros((1, 18))
-            move_array[:, 9 * p2tomove + move] = 1
-            move_scores[move] = np.absolute(
-               self.evaluator.evaluate(board.reshape((1, 18)) + move_array)
-            )
-        return np.argmax(move_scores - illegal_moves)
+        board_states = np.vstack([board.tryMove(m) for m in range(9)])
+        move_location = dict(zip(range(len(board.legalMoves())), board.legalMoves()))
+        move_scores = self.evaluator.evaluate(board_states)
+        if board.state[18]:
+            return move_location[np.argmin(move_scores)]
+        else:
+            return move_location[np.argmax(move_scores)]
+        
 
-class BasicMMAIPlayer(Player):
+class MinimaxPlayer(Player):
     def __init__(self, ev):
         self.evaluator = ev
 
