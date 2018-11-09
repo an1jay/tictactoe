@@ -9,40 +9,39 @@ import pickle
 import random
 
 
-def generateExamples(numGames):
-    p1 = SophisticatedRandomPlayer()
-    p2 = SophisticatedRandomPlayer()
-    x_train, y_train = [], []
+def generateExamples(p1, p2, numGames, save=True):
+    # p1 plays p2 numGames times and the gamehistory
+    # and result of the games are returned as two numpy arrays
+    filename = os.path.join("data", f"u_games_{numGames // 1000}k.pbz2")
+    if os.path.isfile(filename):
+        return filename
+    x_train = []
+    y_train = []
     for i in range(numGames):
-        t = TicTacToe(p2, p1, verbose=False, recordGame=True)
+        t = TicTacToe(p1, p2, verbose=False)
         result = t.play()
-        x_train.extend(t.gameHistory)
-        y_train.extend([result] * len(t.gameHistory))
+        x_train.append(t.board.gameHistory)
+        y_train.extend([result] * len(t.board.gameHistory))
         if i % 1000 == 0:
             progress(i, numGames, status="Generating games")
-    filename = os.path.join(
-        "data", f"unbalanced_example_{numGames // 1000}k.pbz2"
-    )
-    with open(filename, "wb") as f:
-        pickle.dump((x_train, y_train), f)
-    return filename
+    x_t = np.vstack(x_train)
+    y_t = np.array(y_train)
+    if save:
+        with bz2.open(filename, "wb") as f:
+            pickle.dump((x_t, y_t), f)
+        return filename
+    else:
+        return (x_t, y_t)
 
 
-def generateBalancedExamples(numGames):
-    p1 = SophisticatedRandomPlayer()
-    p2 = SophisticatedRandomPlayer()
-    x_train, y_train = [], []
-    for i in range(numGames):
-        t = TicTacToe(p2, p1, verbose=False, recordGame=True)
-        result = t.play()
-        x_train.extend(t.gameHistory)
-        y_train.extend([result] * len(t.gameHistory))
-        if i % 1000 == 0:
-            progress(i, numGames, status="Generating games")
-    filename = os.path.join(
-        "data", f"balanced_example_{numGames // 1000}k.pbz2"
-    )
-
+def generateBalancedExamples(p1, p2, numGames, save=True):
+    # p1 plays p2 numGames times and the gamehistory and result of the
+    # games are 'balanced' (i.e. result ends up where p1 and p2 win
+    # the same amount on average) and the returned as 2 numpy arrays
+    filename = os.path.join("data", f"b_games_{numGames // 1000}k.pbz2")
+    if os.path.isfile(filename):
+        return filename
+    x_train, y_train = generateExamples(p1, p2, numGames, save=False) 
     train = zip(x_train, y_train)
     remove_prob = np.sum(y_train) / np.sum(np.array(y_train) == 1)
     filtered_train = list(
@@ -51,9 +50,10 @@ def generateBalancedExamples(numGames):
             train,
         )
     )
-
     balanced_x, balanced_y = zip(*filtered_train)
-
-    with bz2.open(filename, "wb") as f:
-        pickle.dump((balanced_x, balanced_y), f)
-    return filename
+    if save:
+        with bz2.open(filename, "wb") as f:
+            pickle.dump((balanced_x, balanced_y), f)
+        return filename
+    else:
+        return (balanced_x, balanced_y)

@@ -23,11 +23,7 @@ class Evaluator:
 
     def load_data(self, filename):
         with bz2.open(filename, "rb") as f:
-            x, y = pickle.load(f)
-        self.x_train = np.concatenate(
-            list(map(lambda a: a.reshape((1, 18)), x)), axis=0
-        )
-        self.y_train = np.array(y)
+            self.x_train, self.y_train = pickle.load(f)
 
     def fit(self, epochs=3, batch_size=32):
         self.model.fit(
@@ -43,7 +39,7 @@ class Evaluator:
         return model_name
 
     def evaluate(self, board):
-        return self.model.predict(board)[0,]
+        return self.model.predict(board)[0][0]
 
     def name(self):
         return "-".join([str(l) for l in self.architecture] + [self.loss])

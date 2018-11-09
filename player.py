@@ -1,6 +1,7 @@
 import numpy as np
 import random
 
+from game import Board
 
 class Player:
     def __init__(self):
@@ -24,6 +25,7 @@ class QLearningPlayer(Player):
     def move(self):
         pass
 
+
 class RandomPlayer(Player):
     def move(self, board):
         return np.random.randint(9)
@@ -31,11 +33,7 @@ class RandomPlayer(Player):
 
 class SophisticatedRandomPlayer(Player):
     def move(self, board):
-        choices = []
-        for i in range(9):
-            if board[0, i] + board[1, i] == 0:
-                choices.append(i)
-        return random.choice(choices)
+        return random.choice(board.legalMoves())
 
 
 class HumanPlayer(Player):
@@ -53,44 +51,60 @@ class HumanPlayer(Player):
 class PositionalPlayer(Player):
     def __init__(self, ev):
         self.evaluator = ev
-    
+
     def move(self, board):
-        board_states = np.vstack([board.tryMove(m) for m in range(9)])
-        move_location = dict(zip(range(len(board.legalMoves())), board.legalMoves()))
+        board_states = np.vstack([board.tryMove(m) for m in board.legalMoves()])
+        move_location = dict(
+            zip(range(len(board.legalMoves())), board.legalMoves())
+        )
         move_scores = self.evaluator.evaluate(board_states)
         if board.state[18]:
             return move_location[np.argmin(move_scores)]
         else:
             return move_location[np.argmax(move_scores)]
-        
+
 
 class MinimaxPlayer(Player):
-    def __init__(self, ev):
+    def __init__(self, ev, depth):
         self.evaluator = ev
+        self.DEPTH = depth
 
-    def move(self, board):
-        def valueFunc(b, e):
-            p2tomove = np.sum(board[0]) > np.sum(board[1])
-            illegal_moves = b[0] + b[1]
-            move_scores = np.zeros(9)
-            for move in range(9):
-                move_array = np.zeros((1, 18))
-                move_array[:, 9 * p2tomove + move] = 1
-                move_scores[move] = np.absolute(
-                    e.evaluate(b.reshape((1, 18)) + move_array)
-                )
-            return move_scores - illegal_moves
+    def move(self, brd):
+        def minimax(board, depth):
+            MAXVAL = 2
+            # print(board.state.copy().reshape((1,19)))
+            # print(board, "--- depth",  depth)
+            if depth == 0:
+                return self.evaluator.evaluate(board.state.copy().reshape((1,19)))
 
-        def twoDminimax(b, e):
-            moves = np.zeros(9)
-            p2tomove = np.sum(board[0]) > np.sum(board[1])
-            for move in range(9):
-                move_array = np.ones((2, 9))
-                move_array[int(p2tomove)][move] = 1
-                if (b[0]+b[1])[move]:
-                    moves[move] = 1000
-                else:
-                    moves[move] = np.max(valueFunc(b + move_array, e))
-            return np.argmin(moves)
+            if board.state[18]:
+                value = -MAXVAL
+                for m in board.legalMoves():
+                    board.pushMove(m)
+                    value = max(value, minimax(board, depth-1))
+                return value
+            else:
+                value = MAXVAL
+                for m in board.legalMoves():
+                    board.pushMove(m)
+                    value = min(value, minimax(board, depth-1))
+                return value
 
-        return twoDminimax(board, self.evaluator)
+        board_states = np.vstack([brd.tryMove(m) for m in brd.legalMoves()])
+        move_location = dict(
+            zip(range(len(brd.legalMoves())), brd.legalMoves())
+        )
+        move_scores = []
+        for i in brd.legalMoves():
+           b = Board(brd.state.copy())
+           b.pushMove(i)
+           move_scores.append(minimax(b, self.DEPTH))
+        # print(brd.legalMoves(), " ---- ", move_scores)
+        return move_location[np.argmax(move_scores)]
+
+class MinimaxPlayer2(Player)
+    def __init__(self, ev, depth):
+        self.evaluator = ev
+        self.DEPTH = depth
+
+    def move(self, brd):
