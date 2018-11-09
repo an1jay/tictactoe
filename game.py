@@ -16,21 +16,19 @@ class TicTacToe:
         self.players = [player1, player2]
         self.REWARDS = Reward(*rewards)
         # tuple (win, loss, draw, inbetweenmove)
-        # make named tuple
         self.RECORDGAME = recordGame
         self.VERBOSE = verbose
-        self.board = np.zeros(
-            (2, 9)
-        )  # 1st row is player 1, 2nd row is player 2
+        self.board = np.zeros((2, 3, 3))
+        # 1st dimension = 0 is Player 1; =1 is Player 2
         if self.RECORDGAME:
-            self.gameHistory = [np.array(self.board[:])]
+            self.gameHistory = [np.array(self.board)]
 
     def isLegalMove(self, move):
         # call before making a move
         return (self.board[0] + self.board[1])[move] == 0
 
     def play(self):
-        # returns 1 in p1 wins, -1 if p2 wins, 0 if tie
+        # returns 1 if p1 wins, -1 if p2 wins, 0 if tie
         for player in self.players:
             player.startGame()
 
