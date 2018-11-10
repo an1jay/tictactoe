@@ -69,6 +69,9 @@ class TicTacToe:
 
 
 class Board:
+    WHITE_MOVE = 0
+    BLACK_MOVE = 1
+
     def __init__(self, b=None):
         if b is None:
             self.state = np.zeros(19, dtype=np.dtype("u8"))
@@ -95,7 +98,9 @@ class Board:
         player = self.state[18]
         self.state[int(player) * 9 + move] = 1
         self.state[18] = 1 - player
-        self.gameHistory = np.vstack([self.gameHistory.copy(), self.state.copy()])
+        self.gameHistory = np.vstack(
+            [self.gameHistory.copy(), self.state.copy()]
+        )
 
     def popMoves(self, movesback):
         if movesback < self.gameHistory.shape[1]:
@@ -112,7 +117,7 @@ class Board:
         return tempstate
 
     def isGameOver(self):
-    # returns Boolean for if the game is over, and 0 if p1 has won, 1 if p2 has won 
+        # returns Boolean for if the game is over, and 0 if p1 has won, 1 if p2 has won
         winconditions = [
             (0, 1, 2),
             (3, 4, 5),
@@ -140,7 +145,8 @@ class Board:
         # returns list of legal moves
         return [i for i in range(9) if self.isLegalMove(i)]
 
-b = Board()  
-b.pushMove(8)      
+
+b = Board()
+b.pushMove(8)
 b.pushMove(4)
 b.popMoves(1)
