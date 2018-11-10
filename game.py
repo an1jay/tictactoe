@@ -95,23 +95,24 @@ class Board:
         player = self.state[18]
         self.state[int(player) * 9 + move] = 1
         self.state[18] = 1 - player
-        self.gameHistory = np.vstack([self.gameHistory, self.state])
+        self.gameHistory = np.vstack([self.gameHistory.copy(), self.state.copy()])
 
     def popMoves(self, movesback):
         if movesback < self.gameHistory.shape[1]:
             self.state = self.gameHistory[-movesback - 1]
         else:
             raise LookupError("popping too many moves")
+        self.gameHistory = self.gameHistory[:-1]
 
     def tryMove(self, move):
-
-        player = self.state[18]
         tempstate = self.state.copy()
+        player = tempstate[18]
         tempstate[int(player) * 9 + move] = 1
         tempstate[18] = 1 - player
         return tempstate
 
     def isGameOver(self):
+    # returns Boolean for if the game is over, and 0 if p1 has won, 1 if p2 has won 
         winconditions = [
             (0, 1, 2),
             (3, 4, 5),
@@ -138,3 +139,8 @@ class Board:
     def legalMoves(self):
         # returns list of legal moves
         return [i for i in range(9) if self.isLegalMove(i)]
+
+b = Board()  
+b.pushMove(8)      
+b.pushMove(4)
+b.popMoves(1)

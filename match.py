@@ -1,3 +1,4 @@
+import math
 import numpy as np
 from game import TicTacToe
 from progress import progress
@@ -16,7 +17,7 @@ class Match:
         def playHalf(p1, p2, numG, games):
             result = np.zeros(3)
             for g in range(numG):
-                if g % int(0.2 * numGames) == 0:
+                if g % math.ceil(int(0.2 * numGames)) == 0:
                     progress(games + g, numGames, status="Playing Games")
                 t = TicTacToe(p1, p2, verbose=self.VERBOSE)
                 winner = t.play()

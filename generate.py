@@ -12,7 +12,7 @@ import random
 def generateExamples(p1, p2, numGames, save=True):
     # p1 plays p2 numGames times and the gamehistory
     # and result of the games are returned as two numpy arrays
-    filename = os.path.join("data", f"u_games_{numGames // 1000}k.pbz2")
+    filename = os.path.join("data", "u_games_{}k.pbz2".format(numGames // 1000))
     if os.path.isfile(filename):
         return filename
     x_train = []
@@ -38,7 +38,7 @@ def generateBalancedExamples(p1, p2, numGames, save=True):
     # p1 plays p2 numGames times and the gamehistory and result of the
     # games are 'balanced' (i.e. result ends up where p1 and p2 win
     # the same amount on average) and the returned as 2 numpy arrays
-    filename = os.path.join("data", f"b_games_{numGames // 1000}k.pbz2")
+    filename = os.path.join("data", "b_games_{}k.pbz2".format(numGames // 1000))
     if os.path.isfile(filename):
         return filename
     x_train, y_train = generateExamples(p1, p2, numGames, save=False) 

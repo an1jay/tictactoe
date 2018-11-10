@@ -2,11 +2,10 @@ import os
 import numpy as np
 import time
 from game import TicTacToe
-
 from generate import generateExamples
 from match import Match
 from player import HumanPlayer
-from player import MinimaxPlayer
+from player import MinimaxPlayer2, MinimaxPlayer
 from player import PositionalPlayer
 from player import RandomPlayer
 from player import SophisticatedRandomPlayer
@@ -21,37 +20,28 @@ if __name__ == "__main__":
         loss="mean_squared_error",
         optimizer="adam",
     )
-    f = Evaluator(
-        (64, "tanh", 1), loss="mean_absolute_error", optimizer="adam"
-    )
-    g = Evaluator(
-        (27, "tanh", 27, "tanh", 27, "tanh", 1),
-        loss="mean_absolute_error",
-        optimizer="adam",
-    )
-    h = Evaluator(
-        (16, "relu", 16, "relu", 1),
-        loss="mean_absolute_error",
-        optimizer="adam",
-    )
+
     filename = generateExamples(
         SophisticatedRandomPlayer(),
         SophisticatedRandomPlayer(),
-        int(2.5e5),
+        int(2.5e4),
         save=True,
     )
     for i in [e]:
         # i.load_data(filename)
-        # i.fit(epochs = 2, batch_size=1024)
+        # i.fit(epochs = 2, batch_size=512)
         # i.save_model()
         i.load_model(i.filename())
         print(i.name())
         print(i.evaluate(np.zeros(19).reshape((1,19))))
-        a = MinimaxPlayer(i, depth = 1)
+        a = MinimaxPlayer2(ev = i, depth = 1)
+        c = MinimaxPlayer(ev = i, depth = 1)
         # a = PositionalPlayer(i)
         b = SophisticatedRandomPlayer()
-        # t = TicTacToe(a,b,True)
-        # t.play()
-        print(Match(b,b,False).play(1000))
-        print(Match(a,b,False).play(1000))
+        t = TicTacToe(a,c,True)
+        t.play()
+        # print(t.board.gameHistory, 'full game history')
+        print(Match(b,b,False).play(100))        
+        print(Match(b,c,False).play(100))
+        print(Match(b,a,False).play(100))
     keras.backend.clear_session()
