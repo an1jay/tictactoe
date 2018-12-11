@@ -45,7 +45,7 @@ class HumanPlayer(Player):
         while i_move not in range(9):
             try:
                 i_move = int(input("Insert move (0-8)"))
-            except e:
+            except:
                 pass
         print()
         return i_move
@@ -125,56 +125,59 @@ class MCTSPlayer(Player):
         self.game = TicTacToe(self.randomplayer, self.randomplayer, verbose = False)
         self.ep = exploration_parameter
         self.movetime = movetime
-        
+
     def move(self, board):
-        def chooseNode(node): # using UCT or randomly picking an univisited child node
+        def chooseNode(node, p1): # using UCT or randomly picking an unvisited child node
             if node is None:
                 return None, False
             best_child = None
-            best_UCT = 0
+            best_UCT = -1000000
             for child in node.children:
                 if child.data.numvisits == 0:
                     return child, False
-                
                 else:
                     try:
-                        UCT = child.data.score / child.data.numvisits + self.ep * np.sqrt(child.data.numvisits / node.data.numvisits)
-                    except:
-                        ZeroDivisionError
+                        UCT = (2*p1-1)*child.data.score / child.data.numvisits + self.ep * np.sqrt(np.log(child.data.numvisits) / node.data.numvisits)
+                    except ZeroDivisionError:
+                        print("MCTS: move: chooseNode: UCT being calculated for unvisited node")
+                        pass
                     if UCT > best_UCT:
                         best_UCT = UCT
                         best_child = child
-            
-            return best_child, True
+            return best_child, False
         
         def playout(b):
             isgo, winner = b.isGameOver()
-            if isgo:
+            if isgo and winner is not None:
                 return (1 - 2 * winner) * self.playouts
+            elif isgo:
+                return 0
             q = 0
-            for i in range(self.playouts):
+            for _ in range(self.playouts):
                 self.game.board = Board(board.state.copy())
                 q += self.game.play()
                 # self.game.reset()
             return q   
         
-        rootnode = GameTreeNode(data = MCTStuple(-1, 0, 0))
+        rootnode = GameTreeNode(data = MCTStuple(-1, 0, 1))
+        for m in board.legalMoves():
+                rootnode.add_child(GameTreeNode(data = MCTStuple(m,0,0)))
         t0 = time.time()
         while True:
-            bd = board
+            bd = Board(board.state.copy())
             node = rootnode
             history = [node]
             visited = node.data.numvisits != 0 # true iff node is visited
-            
+            # print("MCTS move(): in while loop TRUE          ", node)
             while visited: # finds an unvisited node and stores the path to get there
-                if node is None:
-                    break
+                # print("MCTS move(): in while loop visited (pre) ", node)
                 if not (node is None):
-                    node, visited = chooseNode(node) 
-                    history.append(node)
-                    bd.pushMove(node.data.move)
-            
-            q_val = playout(bd)
+                    node, visited = chooseNode(node, 1-bd.state[18])
+                    if not (node is None):
+                        history.append(node)
+                        bd.pushMove(node.data.move)
+                # print("MCTS move(): in while loop visited (post)", node)
+            q_val = playout(bd)/self.playouts
             for n in history: # backpropagates the score of this unvisited node 
                 n.data.score += q_val
                 n.data.numvisits += 1
@@ -200,12 +203,17 @@ class GameTreeNode:
     def update_data(self, new_data):
         self.data = new_data
 
+    def __repr__(self):
+        return "Game tree node " + str(self.data)
+
 class MCTStuple:
     def __init__(self, move, score, numvisits):
         self.move = move
         self.score = score
         self.numvisits = numvisits
-            
+    
+    def __str__(self):
+        return "move: " + str(self.move)+" score: " + str(self.score) + " numVisits: " + str(self.numvisits)
             
 # MCTStuple = namedtuple('MCTStuple', ['move','score','numvisits'])
         

@@ -80,6 +80,8 @@ class Board:
             self.state = np.zeros(19, dtype=np.dtype("u8"))
         else:
             self.state = b
+
+        # self.state stores in 18 elements, the board (p1 moves, and p2 moves) and 19th element holds the player to move (0=p1, 1=p2)
         self.previous_state = None
         self.gameHistory = self.state.copy()
 
