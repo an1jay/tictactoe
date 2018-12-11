@@ -63,6 +63,9 @@ class TicTacToe:
                 else:
                     self.players[p].reward(self.REWARDS.endofmove)
 
+    def reset():
+        self.board = Board()
+    
     def smartPrint(self, x, ending="\n"):
         if self.VERBOSE:
             print(x, end=ending)

@@ -1,5 +1,7 @@
+from collections import namedtuple
 import numpy as np
 import random
+import time
 
 from game import Board
 
@@ -114,3 +116,87 @@ class MinimaxPlayer(Player):
             return max(move_scores.keys(), key=lambda x: move_scores[x])
         else:
             return min(move_scores.keys(), key=lambda x: move_scores[x])
+
+class MCTSPlayer:
+    def __init__(self, playouts = 50, exploration_parameter = np.sqrt(2), movetime = 30):
+        self.playouts = playouts
+        # self.gametree = GameTreeNode(data = MCTStuple(None,None, 0))    
+        self.randomplayer = SophisticatedRandomPlayer()
+        self.game = TicTacToe(self.randomplayer, self.randomplayer, False)
+        self.ep = exploration_parameter
+        self.movetime = movetime
+        
+    def move(self, board):
+        def chooseNode(node): # using UCT or randomly picking an univisited child node
+            best_child = None
+            best_UCT = 0
+            for child in node.children:
+                if child.data.score is None:
+                    return child, False
+                
+                else:
+                    try:
+                        UCT = child.data.score / child.data.numvisits + self.ep * np.sqrt(child.data.numvisits / node.data.numvisits)
+                    except:
+                        ZeroDivisionError
+                    if UCT > best_UCT:
+                        best_UCT = UCT
+                        best_child = child
+            
+            return best_child, True
+        
+        def playout(b):
+            q = 0
+            for i in range(self.playouts):
+                self.game.board = b
+                q += self.game.play()
+            return q   
+        
+        rootnode = GameTreeNode(data = MCTStuple(-1, None, 0))
+        t0 = time.time()
+        while True:
+            node = rootnode
+            history = [node]
+            visited = node.data.numvisits != 0 # true iff node is visited
+            
+            while visited: # finds an unvisited node and stores the path to get there
+                node, visited = chooseNode(node) 
+                history.append(node)
+            
+            q_val = playout(node)
+            for n in history: # backpropagates the score of this unvisited node 
+                n.data.score += q_val
+                n.data.numvisits += 1
+            
+            for m in board.legalMoves():
+                node.add_child(GameTreeNode(data = MCTStuple(m,None,0)))        
+            
+            if time.time() - t0 > self.movetime:
+                break
+        
+        bn = max(rootnode.children, key = lambda x: x.data.numvisits)
+        return bn.data.move
+        
+class GameTreeNode:
+    def __init__(self, data = None):
+        self.data = data
+        self.children = []
+    
+    def add_child(self, child)
+        assert isinstance(child, GameTreeNode)
+        self.children.append(child)
+        
+    def update_data(self, new_data):
+        self.data = new_data
+    
+MCTStuple = namedtuple('MCTStuple', ['move','score','numvisits'])
+        
+    
+    
+    
+    
+    
+    
+    
+    
+        

@@ -9,7 +9,8 @@ class Match:
         self.p1 = p1
         self.p2 = p2
         self.VERBOSE = verbose
-
+        self.t = TicTacToe(p1, p2, verbose=self.VERBOSE)
+        
     def play(self, numGames):
         score = np.zeros((2, 3))
         half = 0
@@ -19,8 +20,8 @@ class Match:
             for g in range(numG):
                 if g % math.ceil(0.05 * numGames) == 0:
                     progress(games + g, numGames, status="Playing Games")
-                t = TicTacToe(p1, p2, verbose=self.VERBOSE)
-                winner = t.play()
+                winner = self.t.play()
+                self.t.reset()
                 result[winner + 1] += 1
             return result
 
