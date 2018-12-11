@@ -12,7 +12,7 @@ from player import RandomPlayer
 from player import SophisticatedRandomPlayer
 from progress import progress
 # from tensorflow import keras
-from train import Evaluator
+# from train import Evaluator
 
 if __name__ == "__main__":
 
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     # )
     # e.load_model("model/16-tanh-16-tanh-1-mean_squared_error.h5")
     
-    m = MCTSPlayer(playouts = 10, movetime = 10)
+    m = MCTSPlayer(playouts = 20, movetime = 0.5)
     r = SophisticatedRandomPlayer()
     t = TicTacToe(m, r, verbose = True)
     t.play()

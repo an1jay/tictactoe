@@ -63,7 +63,7 @@ class TicTacToe:
                 else:
                     self.players[p].reward(self.REWARDS.endofmove)
 
-    def reset():
+    def reset(self):
         self.board = Board()
     
     def smartPrint(self, x, ending="\n"):
