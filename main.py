@@ -23,12 +23,12 @@ if __name__ == "__main__":
     # )
     # e.load_model("model/16-tanh-16-tanh-1-mean_squared_error.h5")
     
-    m = MCTSPlayer(playouts = 100, movetime = 2)
+    m = MCTSPlayer(playouts = 100, movetime = 4)
     r = SophisticatedRandomPlayer()
     t = TicTacToe(r, m, verbose = True)
     print(t.play())
    
-    # match = Match(r , m, False)
+    # match = Match(m , r, False)
     # print(match.play(20))
     
     # keras.backend.clear_session()

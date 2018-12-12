@@ -25,6 +25,6 @@ class Match:
                 result[winner + 1] += 1
             return result
 
-        score[0] = np.flip(playHalf(self.p1, self.p2, numGames // 2, 0))
+        score[0] = np.flip(playHalf(self.p1, self.p2, numGames // 2, 0), 0)
         score[1] = playHalf(self.p2, self.p1, numGames // 2, numGames // 2)
         return score
