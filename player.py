@@ -85,7 +85,7 @@ class MinimaxPlayer(Player):
                     return 2 - 4 * winner
             else:
                 return self.evaluator.evaluate(b.state.copy().reshape((1, 19)))
-
+        
         def minimax(brd, depth, maxplayer):
             MAXVAL = 100000
             gameover, winner = brd.isGameOver()
@@ -228,7 +228,7 @@ class GameTree:
             assert node == MCTSPlayer.rootnode
             self.d[node] = data
         else:
-            print(self.d.keys())
+            # print(self.d.keys())
             assert parent in self.d.keys()
             self.d[parent+node] = data
 
@@ -265,7 +265,7 @@ class GameTree:
 class MCTSPlayer(Player):
     rootnode = ">"
 
-    def __init__(self, ep=1.4, numplayouts=20,  movetime=45):
+    def __init__(self, ep=np.sqrt(2), numplayouts=20,  movetime=45):
         #self.gt = GameTree()
         self.ep = ep
         self.numpl = numplayouts
@@ -275,7 +275,7 @@ class MCTSPlayer(Player):
 
     def move(self, board):
         self.gt = GameTree()
-        print("MCTS moveS")
+        # print("MCTS moveS")
         t0 = time.time()
 
         # which player are we?
@@ -292,9 +292,9 @@ class MCTSPlayer(Player):
         player = board.state[18]
 
         while True:
-            print("in while loop")
+            # print("in while loop")
             chosennode = self.choose_next_node(MCTSPlayer.rootnode, board)
-            print("CHosen NodE", chosennode)
+            # print("CHosen NodE", chosennode)
 
             if time.time() - t0 > self.movet:
                 break
@@ -318,11 +318,12 @@ class MCTSPlayer(Player):
         best_numVisits = 0
         for m in self.gt.get_children(MCTSPlayer.rootnode):
             data = self.gt.get_data(m)
-            if not (data[1] < best_numVisits):
+            if data[1] > best_numVisits:
                 best_numVisits = data[1]
                 best_move = m
         # return max(self.gt.get_children(MCTSPlayer.rootnode), key = lambda m: self.gt.get_data(m)[1])
-        return int(m[1])
+        # print('children visits', list(map(lambda x: (x,self.gt.get_data(x)[1]), self.gt.get_children(MCTSPlayer.rootnode))))
+        return int(best_move[1])
 
     def playout(self, board, player):
         gameover, winner = board.isGameOver()
@@ -341,8 +342,7 @@ class MCTSPlayer(Player):
 
     def choose_next_level_node(self, currnode, board):
         # returns node, Terminal (bool)
-        terminal = self.is_node_terminal(currnode, board)
-
+        
         children = self.gt.get_children(currnode)
         childUCTs = list(
             map(lambda cnode: self.calcUCT(currnode, cnode, ), children))
@@ -350,20 +350,23 @@ class MCTSPlayer(Player):
         bestchild = "-------------"
 
         for index in range(len(childUCTs)):
+            terminal = self.is_node_terminal(children[index], board)
             if childUCTs[index] is None:
-                print("Child has None UCT")
-                return children[index], (False or terminal)
+                # print("Child has None UCT index", index, 'child', children[index], 'child unct', childUCTs[index])
+                return children[index], terminal
             elif childUCTs[index] > bestUCT:
-                print("Child has not None UCT")
+                # print("Child has not None UCT, index", index, 'child', children[index], 'child unct', childUCTs[index])
                 bestUCT = childUCTs[index]
                 bestchild = children[index]
-        return bestchild, (True or terminal)
+                # print('bestchild', bestchild)
+        return bestchild, terminal
 
     def choose_next_node(self, currnode, board):
         parent = currnode
         # Equiv to  while TRUE; maybe change?
         for _ in range(9):
             node, terminal = self.choose_next_level_node(parent, board)
+            # print('choose_next_node: node ', node, 'terminal ', terminal)
             if terminal:
                 return node
             else:
@@ -377,12 +380,13 @@ class MCTSPlayer(Player):
             bd.pushMove(int(m))
         gameover, _ = bd.isGameOver()
         if gameover:
-            print("GameOver True")
+            # print("GameOver True")
             return True
         elif self.gt.get_data(node)[1] == 0:
-            print("GameOver False, 0 Visits True")
+            # print("GameOver False, 0 Visits True")
             return True
-        return False
+        else:
+            return False
 
     def calcUCT(self, parentnode, childnode):
         if self.gt.get_data(childnode)[1] == 0:

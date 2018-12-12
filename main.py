@@ -26,20 +26,34 @@ if __name__ == "__main__":
     
 
 
-    m = MCTSPlayer(numplayouts = 100, movetime = 4)
-    r = SophisticatedRandomPlayer()
-    t = TicTacToe(r, m, verbose = True)
-    print(t.play())
-
-    # g = GameTree()
-    # g.add_node(node = ">", data = "none", parent = None)
-    # g.add_node(node = "1", data = "none", parent = ">")
-    # g.add_node(node = "0", data = "none", parent = ">1")
-    # print(g.get_parents_to_root(">10"))
-
-   
+    # m = MCTSPlayer(numplayouts = 20, movetime = 1)
+    # r = SophisticatedRandomPlayer()
     # match = Match(m , r, False)
     # print(match.play(20))
+    # m = MCTSPlayer(numplayouts = 20, movetime = 2)
+    # r = SophisticatedRandomPlayer()
+    # # t = TicTacToe(r, m, verbose = True)
+    # # print(t.play())
+
+    # # g = GameTree()
+    # # g.add_node(node = ">", data = "none", parent = None)
+    # # g.add_node(node = "1", data = "none", parent = ">")
+    # # g.add_node(node = "0", data = "none", parent = ">1")
+    # # print(g.get_parents_to_root(">10"))
+
+   
     
     # keras.backend.clear_session()
     
+    m = MCTSPlayer(numplayouts = 10, movetime = 15, ep = 0)
+    r = HumanPlayer()
+    # t = TicTacToe(r, m, verbose = True)
+    # print(t.play())
+    # r = HumanPlayer()
+    match = Match(r , m, True)
+    print(match.play(2))
+    
+    # m = MinimaxPlayer(ev = e, depth = 3)
+    # r = SophisticatedRandomPlayer()
+    # match = Match(m , r, True)
+    # print(match.play(2))
