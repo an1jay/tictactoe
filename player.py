@@ -260,40 +260,46 @@ class GameTree:
 
     def get_children(self, parent):
         return list(filter(lambda can: parent == self.get_parent(can), self.d.keys()))
+    
+    def get_all_nodes(self):
+        return self.d.keys()
 
 
 class MCTSPlayer(Player):
     rootnode = ">"
 
     def __init__(self, ep=np.sqrt(2), numplayouts=20,  movetime=45):
-        #self.gt = GameTree()
+        self.gt = GameTree()
         self.ep = ep
         self.numpl = numplayouts
         self.movet = movetime
         self.p1 = SophisticatedRandomPlayer()
         self.game = TicTacToe(self.p1, self.p1, verbose=False)
-
-    def move(self, board):
+        
+    def startGame(self):
         self.gt = GameTree()
-        # print("MCTS moveS")
-        t0 = time.time()
-
-        # which player are we?
-        p = board.state[18]
-
+        
         # define root node (i.e. current game state)
         self.gt.add_node(node=MCTSPlayer.rootnode, data=[0, 0], parent=None)
-
+        
         # add children of root node
-        for m in board.legalMoves():
+        for m in Board().legalMoves():
             self.gt.add_node(node=str(m), data=[
                              0, 0], parent=MCTSPlayer.rootnode)
 
+    def move(self, board):
+        # self.gt = GameTree()
+        # print("MCTS moveS")
+        t0 = time.time()
+        
+        rtnode = self.board_already_in_gt(board)
+        
+        # which player are we?
         player = board.state[18]
-
+        
         while True:
             # print("in while loop")
-            chosennode = self.choose_next_node(MCTSPlayer.rootnode, board)
+            chosennode = self.choose_next_node(rtnode, board)
             # print("CHosen NodE", chosennode)
 
             if time.time() - t0 > self.movet:
@@ -325,6 +331,43 @@ class MCTSPlayer(Player):
         # print('children visits', list(map(lambda x: (x,self.gt.get_data(x)[1]), self.gt.get_children(MCTSPlayer.rootnode))))
         return int(best_move[1])
 
+    def board_already_in_gt(self, board): 
+        # returns most visited node if the board position input is already in the gt
+        num_moves = np.sum(board.state[:18])
+        possibilities = filter(lambda x: len(x) == num_moves + 1, self.gt.get_all_nodes())
+        equivalents = []
+        for p in possibilities:
+            b = Board()
+            for m in p[1:]:
+                b.pushMove(int(m))
+            if b.state == board.state:
+                equivalents.append(p)
+                
+        if len(equivalents) == 0:
+            bdarray = board.state.copy()[:-1]
+            where1 = np.where(bdarray[:9] == 1)
+            where2 = np.where(bdarray[9:] == 1)
+            node = '         '
+            for i in range(len(node)):
+                if i%2 == 0:
+                    try:
+                        node[i] = str(where1[i/2])
+                    except IndexError:
+                        pass 
+                else:
+                    try:
+                        node[i] = str(where2[i-1/2])
+                    except IndexError:
+                        pass
+            node = MCTSPlayer.rootnode + node.strip()          
+            return node
+
+            
+        else:    
+            return max(equivalents, key = lambda x : self.gt.get_data(x)[1])
+            
+        
+    
     def playout(self, board, player):
         gameover, winner = board.isGameOver()
         if gameover:

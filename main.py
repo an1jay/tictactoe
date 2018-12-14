@@ -45,7 +45,7 @@ if __name__ == "__main__":
     
     # keras.backend.clear_session()
     
-    m = MCTSPlayer(numplayouts = 10, movetime = 15, ep = 0)
+    m = MCTSPlayer(numplayouts = 10, movetime = 15, ep = 0.1)
     r = HumanPlayer()
     # t = TicTacToe(r, m, verbose = True)
     # print(t.play())
