@@ -23,8 +23,6 @@ if __name__ == "__main__":
         # optimizer="adam",
     # )
     # e.load_model("model/16-tanh-16-tanh-1-mean_squared_error.h5")
-    
-
 
     # m = MCTSPlayer(numplayouts = 20, movetime = 1)
     # r = SophisticatedRandomPlayer()
@@ -41,20 +39,25 @@ if __name__ == "__main__":
     # # g.add_node(node = "0", data = "none", parent = ">1")
     # # print(g.get_parents_to_root(">10"))
 
-   
-    
     # keras.backend.clear_session()
-    
+
     # m = MCTSPlayer(numplayouts = 20, movetime = 10, ep = 1.4142135623730950488)
-    r = MCTSPlayer(numplayouts = 10, movetime = 10, ep = 1.4142135623730950488)
-    m = MinimaxPlayer(ev = None, depth = 9)
+
+    m = MinimaxPlayer(ev=None, depth=9)
     # t = TicTacToe(r, m, verbose = True)
     # print(t.play())
     # r = HumanPlayer()
 
+    dic = {}
 
-    match = Match(m, r, True)
-    print(match.play(20))
+    for i in range(1, 10):
+        unit = 1.414/i
+        r = MCTSPlayer(numplayouts=5, movetime=5, ep=unit)
+        match = Match(m, r, True)
+        res = match.play(10)
+        dic[unit] = res
+    
+    print(dic)
 
     # m.startGame()
     # b = Board()
@@ -65,8 +68,6 @@ if __name__ == "__main__":
     # b.pushMove(6)
     # print(m.board_already_in_gt(b))
     # print("B state", b.state)05
-
-    
 
     # r = SophisticatedRandomPlayer()
     # match = Match(m , r, True)

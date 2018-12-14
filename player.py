@@ -19,7 +19,8 @@ class Player:
         pass
 
     def startGame(self):
-        print(self.__class__.__name__, "starts game")
+        # print(self.__class__.__name__, "starts game")
+        pass
 
 
 class QLearningPlayer(Player):
@@ -71,12 +72,15 @@ class PositionalPlayer(Player):
 
 
 class MinimaxPlayer(Player):
-    def __init__(self, ev, depth, cachelimit=int(0)):
+    def __init__(self, ev, depth, cachelimit=int(1000)):
         self.evaluator = ev
         self.DEPTH = depth
         self.nodecount = 0
         self.cache = {}
         self.cachelimit = cachelimit
+    
+    def startGame(self):
+        print("MinimaxPlayer starts game")
 
     def move(self, board):
         def h(b):
@@ -114,10 +118,12 @@ class MinimaxPlayer(Player):
         t0 = time.time()
 
         print("MinimaxPlayer thinks...")
-        if board.state.tobytes() in self.cache.keys():
-            print("MinimaxPlayer depth {0} played from cache in {1:.2f}".format(
+        # if move in cache, play it
+        # print("MMP - pre - cache: ", self.cache)
+        if tuple(board.state) in self.cache.keys():
+            print("MinimaxPlayer depth {0} played from cache in {1:.2f} seconds".format(
                 self.DEPTH, time.time()-t0))
-            return self.cache[board.state.tobytes()]
+            return self.cache[tuple(board.state)]
 
         move_scores = {}
         mxPl = board.state[18] == Board.BLACK_MOVE
@@ -135,13 +141,17 @@ class MinimaxPlayer(Player):
         self.reset_nodecount()
         if board.state[18] == Board.WHITE_MOVE:
             bmove = max(move_scores.keys(), key=lambda x: move_scores[x])
+            # while cache is smaller than cache limit, add move to cache
             if len(self.cache.keys()) < self.cachelimit:
-                self.cache[board.state.tobytes()] = bmove
+                self.cache[tuple(board.state)] = bmove
+                # print("MMP - post - cache: ", self.cache)
             return bmove
         else:
             bmove = min(move_scores.keys(), key=lambda x: move_scores[x])
+            # while cache is smaller than cache limit, add move to cache
             if len(self.cache.keys()) < self.cachelimit:
-                self.cache[board.state.tobytes()] = bmove
+                self.cache[tuple(board.state)] = bmove
+                # print("MMP - post - cache: ", self.cache)
             return bmove
 
     def increment_nodecount(self):
