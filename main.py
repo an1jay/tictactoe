@@ -45,15 +45,29 @@ if __name__ == "__main__":
     
     # keras.backend.clear_session()
     
-    m = MCTSPlayer(numplayouts = 10, movetime = 15, ep = 0.1)
-    r = HumanPlayer()
+    # m = MCTSPlayer(numplayouts = 20, movetime = 10, ep = 1.4142135623730950488)
+    r = MCTSPlayer(numplayouts = 10, movetime = 10, ep = 1.4142135623730950488)
+    m = MinimaxPlayer(ev = None, depth = 9)
     # t = TicTacToe(r, m, verbose = True)
     # print(t.play())
     # r = HumanPlayer()
-    match = Match(r , m, True)
-    print(match.play(2))
+
+
+    match = Match(m, r, True)
+    print(match.play(20))
+
+    # m.startGame()
+    # b = Board()
+    # b.pushMove(0)
+    # b.pushMove(2)
+    # b.pushMove(3)
+    # b.pushMove(4)
+    # b.pushMove(6)
+    # print(m.board_already_in_gt(b))
+    # print("B state", b.state)05
+
     
-    # m = MinimaxPlayer(ev = e, depth = 3)
+
     # r = SophisticatedRandomPlayer()
     # match = Match(m , r, True)
     # print(match.play(2))

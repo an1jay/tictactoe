@@ -1,7 +1,8 @@
-from collections import namedtuple
 import numpy as np
 import random
 import time
+from collections import namedtuple
+from collections import OrderedDict
 from game import Board
 from game import TicTacToe
 
@@ -18,7 +19,7 @@ class Player:
         pass
 
     def startGame(self):
-        pass
+        print(self.__class__.__name__, "starts game")
 
 
 class QLearningPlayer(Player):
@@ -70,9 +71,12 @@ class PositionalPlayer(Player):
 
 
 class MinimaxPlayer(Player):
-    def __init__(self, ev, depth):
+    def __init__(self, ev, depth, cachelimit=int(0)):
         self.evaluator = ev
         self.DEPTH = depth
+        self.nodecount = 0
+        self.cache = {}
+        self.cachelimit = cachelimit
 
     def move(self, board):
         def h(b):
@@ -85,10 +89,11 @@ class MinimaxPlayer(Player):
                     return 2 - 4 * winner
             else:
                 return self.evaluator.evaluate(b.state.copy().reshape((1, 19)))
-        
+
         def minimax(brd, depth, maxplayer):
+            self.increment_nodecount()
             MAXVAL = 100000
-            gameover, winner = brd.isGameOver()
+            gameover, _ = brd.isGameOver()
             if depth == 0 or gameover:
                 return h(brd)
             if maxplayer:
@@ -106,163 +111,44 @@ class MinimaxPlayer(Player):
                     value = min(value, minimax(new_board, depth - 1, True))
                 return value
 
+        t0 = time.time()
+
+        print("MinimaxPlayer thinks...")
+        if board.state.tobytes() in self.cache.keys():
+            print("MinimaxPlayer depth {0} played from cache in {1:.2f}".format(
+                self.DEPTH, time.time()-t0))
+            return self.cache[board.state.tobytes()]
+
         move_scores = {}
         mxPl = board.state[18] == Board.BLACK_MOVE
         for move in board.legalMoves():
             val = minimax(Board(board.tryMove(move)), self.DEPTH, mxPl)
             # print(board.state, move, val, self.DEPTH, mxPl)
             move_scores[move] = val
+        time_elapsed = time.time()-t0
+        try:
+            ncnt = self.nodecount/time_elapsed
+        except ZeroDivisionError:
+            ncnt = 1e9
+        print("MinimaxPlayer depth {0} explored {1} nodes in {2:.2f} seconds at {3:.2f} nodes/s".format(
+            self.DEPTH, self.nodecount, time_elapsed, ncnt))
+        self.reset_nodecount()
         if board.state[18] == Board.WHITE_MOVE:
-            return max(move_scores.keys(), key=lambda x: move_scores[x])
+            bmove = max(move_scores.keys(), key=lambda x: move_scores[x])
+            if len(self.cache.keys()) < self.cachelimit:
+                self.cache[board.state.tobytes()] = bmove
+            return bmove
         else:
-            return min(move_scores.keys(), key=lambda x: move_scores[x])
+            bmove = min(move_scores.keys(), key=lambda x: move_scores[x])
+            if len(self.cache.keys()) < self.cachelimit:
+                self.cache[board.state.tobytes()] = bmove
+            return bmove
 
-# class MCTSPlayer(Player):
-    # def __init__(self, playouts = 50, exploration_parameter = np.sqrt(2), movetime = 30):
-        # self.playouts = playouts
-        # # self.gametree = GameTreeNode(data = MCTStuple(None, 0, 0))
-        # self.randomplayer = SophisticatedRandomPlayer()
-        # self.game = TicTacToe(self.randomplayer, self.randomplayer, verbose = False)
-        # self.ep = exploration_parameter
-        # self.movetime = movetime
+    def increment_nodecount(self):
+        self.nodecount += 1
 
-    # def move(self, board):
-        # mctsplayer = board.state[18]
-        # print(mctsplayer)
-        # def chooseNode(node, pl): # using UCT or randomly picking an unvisited child node
-            # if node is None:
-            # return None, False
-            # best_child = None
-            # best_UCT = -1000000
-            # for child in node.children:
-            # if child.data.numvisits == 0:
-            # return child, False
-            # else:
-            # try:
-            # UCT = ((-1)**pl)*child.data.score / child.data.numvisits + self.ep * np.sqrt(np.log(node.data.numvisits) / child.data.numvisits)
-            # except ZeroDivisionError:
-            # print("MCTS: move: chooseNode: UCT being calculated for unvisited node")
-            # pass
-            # if UCT > best_UCT:
-            # best_UCT = UCT
-            # best_child = child
-            # print(best_UCT)
-
-            # return best_child, True
-
-        # def playout(b):
-            # isgo, winner = b.isGameOver()
-            # if isgo and winner is not None:
-            # return (1 - 2 * winner) * self.playouts
-            # elif isgo:
-            # return 0
-            # q = 0
-            # for _ in range(self.playouts):
-            # self.game.board = Board(b.state.copy())
-            # q += self.game.play()
-            # # self.game.reset()
-            # return q
-
-        # rootnode = GameTreeNode(data = MCTStuple(-1, 0, 1))
-        # for m in board.legalMoves():
-            # rootnode.add_child(GameTreeNode(data = MCTStuple(m,0,0)))
-        # t0 = time.time()
-        # while True:
-            # bd = Board(board.state.copy())
-            # node = rootnode
-            # history = [node]
-            # visited = node.data.numvisits != 0 # true iff node is visited
-            # # print("MCTS move(): in while loop TRUE          ", node)
-            # while visited: # finds an unvisited node and stores the path to get there
-            # # print("MCTS move(): in while loop visited (pre) ", node)
-            # if not (node is None):
-            # node, visited = chooseNode(node, bd.state[18])
-            # if not (node is None):
-            # history.append(node)
-            # bd.pushMove(node.data.move)
-            # winner, isgameover = bd.isGameOver()
-            # if isgameover:
-            # visited = False
-            # print(list(map(lambda x: (x.data.move, x.data.score, x.data.numvisits), history)))
-            # # print("MCTS move(): in while loop visited (post)", node)
-            # q_val = playout(bd)/self.playouts
-            # for n in history: # backpropagates the score of this unvisited node
-            # n.data.score += q_val
-            # n.data.numvisits += 1
-
-            # for m in bd.legalMoves():
-            # node.add_child(GameTreeNode(data = MCTStuple(m,0,0)))
-
-            # if time.time() - t0 > self.movetime:
-            # break
-
-        # bn = max(rootnode.children, key = lambda x: x.data.numvisits)
-        # return bn.data.move
-
-# class GameTreeNode:
-#     def __init__(self, data = None):
-#         self.data = data
-#         self.children = []
-
-#     def add_child(self, child):
-#         assert isinstance(child, GameTreeNode)
-#         self.children.append(child)
-
-#     def update_data(self, new_data):
-#         self.data = new_data
-
-#     def __repr__(self):
-#         return "Game tree node " + str(self.data)
-
-# MCTStuple = namedtuple('MCTStuple', ['move', 'score', 'numvisits'])
-
-
-class GameTree:
-    def __init__(self):
-        self.d = dict()
-
-    def add_node(self, node, data, parent):
-        # nodeand parent are str
-        # each data is a list [score, numVisits]
-        if parent is None:
-            assert node == MCTSPlayer.rootnode
-            self.d[node] = data
-        else:
-            # print(self.d.keys())
-            assert parent in self.d.keys()
-            self.d[parent+node] = data
-
-    def get_parent(self, node):
-        # print("Node: ", node)
-        # print("keys: ", list(self.d.keys()))
-        assert node in self.d.keys()
-        return node[:-1]
-
-    def get_parents_to_root(self, node):
-        parents = [node]
-        p = None
-        c = node
-        while True:
-            if p == MCTSPlayer.rootnode:
-                break
-            p = self.get_parent(c)
-            parents.append(p)
-            c = p
-        return parents
-
-    def get_data(self, node):
-        assert node in self.d
-        return self.d[node]
-
-    def update_data(self, node, data):
-        assert node in self.d
-        self.d[node] = data
-
-    def get_children(self, parent):
-        return list(filter(lambda can: parent == self.get_parent(can), self.d.keys()))
-    
-    def get_all_nodes(self):
-        return self.d.keys()
+    def reset_nodecount(self):
+        self.nodecount = 0
 
 
 class MCTSPlayer(Player):
@@ -275,99 +161,109 @@ class MCTSPlayer(Player):
         self.movet = movetime
         self.p1 = SophisticatedRandomPlayer()
         self.game = TicTacToe(self.p1, self.p1, verbose=False)
-        
+
     def startGame(self):
+        print("MCTSPlayer starts game")
         self.gt = GameTree()
-        
         # define root node (i.e. current game state)
         self.gt.add_node(node=MCTSPlayer.rootnode, data=[0, 0], parent=None)
-        
-        # add children of root node
-        for m in Board().legalMoves():
-            self.gt.add_node(node=str(m), data=[
-                             0, 0], parent=MCTSPlayer.rootnode)
 
     def move(self, board):
-        # self.gt = GameTree()
-        # print("MCTS moveS")
+        print("MCTSPlayer thinks...")
+        nodecnt = 0
         t0 = time.time()
-        
-        rtnode = self.board_already_in_gt(board)
-        
+        rtnode, alrdy_in = self.board_already_in_gt(board)
+        # print("RTNODE: ", rtnode)
+        # node not in; if node in, no need to do anything
+        if not alrdy_in:
+            # need to check if any parents are in gt.
+            rtnode_would_be_parents = self.gt.get_would_be_parents_to_root(
+                rtnode)
+
+            # get parent in game tree, not grandparent, etc
+            # print("RTNode parents", rtnode_would_be_parents)
+            last_parent_in_gt = max(list(filter(lambda x: self.gt.node_in_tree(
+                x), rtnode_would_be_parents)), key=lambda x: len(x))
+            # print("Latest parent: ", last_parent_in_gt)
+            # print("Parent - RTnode", rtnode.replace(last_parent_in_gt, ""))
+
+            # add all children of that parent
+            last_added_parent = last_parent_in_gt
+            for m in rtnode.replace(last_parent_in_gt, ""):
+                # print("adding: ", m, "with parent: ", last_added_parent)
+                self.gt.add_node(m, [0, 0], last_added_parent)
+                last_added_parent = last_added_parent + m
+
         # which player are we?
         player = board.state[18]
-        
-        while True:
-            # print("in while loop")
-            chosennode = self.choose_next_node(rtnode, board)
-            # print("CHosen NodE", chosennode)
 
+        while True:
+            nodecnt += 1
+            # print("RTNODE in WHile LOOP: ", rtnode)
+            chosennode = self.choose_next_node(rtnode, board)
             if time.time() - t0 > self.movet:
                 break
             nodeboard = Board(board.state.copy())
-            for m in chosennode[1:]:
+            for m in chosennode.replace(rtnode, ""):
                 nodeboard.pushMove(int(m))
+
+            # Add children of current node
+            for m in nodeboard.legalMoves():
+                self.gt.add_node(str(m), data=[0, 0], parent=chosennode)
 
             score = self.playout(nodeboard, player)
 
             # back propagate score & numVisits
+            # print("Chosen Node: '" + chosennode + "'")
             for node in self.gt.get_parents_to_root(chosennode):
                 data = self.gt.get_data(node)
                 data[0] += score
                 data[1] += 1
                 self.gt.update_data(node, data)
 
-            for m in nodeboard.legalMoves():
-                self.gt.add_node(str(m), data=[0, 0], parent=chosennode)
-
         best_move = None
         best_numVisits = 0
-        for m in self.gt.get_children(MCTSPlayer.rootnode):
+        for m in self.gt.get_children(rtnode):
             data = self.gt.get_data(m)
             if data[1] > best_numVisits:
                 best_numVisits = data[1]
                 best_move = m
         # return max(self.gt.get_children(MCTSPlayer.rootnode), key = lambda m: self.gt.get_data(m)[1])
-        # print('children visits', list(map(lambda x: (x,self.gt.get_data(x)[1]), self.gt.get_children(MCTSPlayer.rootnode))))
-        return int(best_move[1])
+        # print("node", rtnode, 'children visits', list(map(lambda x: (x,self.gt.get_data(x)[1]), self.gt.get_children(rtnode))))
+        print("MCTSPLayer explored {0} nodes in {1} seconds at {2:.2f} nodes/s".format(
+            nodecnt, self.movet, nodecnt/self.movet))
+        return int(best_move[-1])
 
-    def board_already_in_gt(self, board): 
-        # returns most visited node if the board position input is already in the gt
+    def board_already_in_gt(self, board):
+        # returns most visited node if the board position input is already in the gt, and whether the node is in game tree
         num_moves = np.sum(board.state[:18])
-        possibilities = filter(lambda x: len(x) == num_moves + 1, self.gt.get_all_nodes())
+        possibilities = filter(lambda x: len(
+            x) == num_moves + 1, self.gt.get_all_nodes())
         equivalents = []
         for p in possibilities:
             b = Board()
             for m in p[1:]:
                 b.pushMove(int(m))
-            if b.state == board.state:
+            if np.array_equal(b.state, board.state):
                 equivalents.append(p)
-                
+
         if len(equivalents) == 0:
             bdarray = board.state.copy()[:-1]
-            where1 = np.where(bdarray[:9] == 1)
-            where2 = np.where(bdarray[9:] == 1)
-            node = '         '
-            for i in range(len(node)):
-                if i%2 == 0:
-                    try:
-                        node[i] = str(where1[i/2])
-                    except IndexError:
-                        pass 
-                else:
-                    try:
-                        node[i] = str(where2[i-1/2])
-                    except IndexError:
-                        pass
-            node = MCTSPlayer.rootnode + node.strip()          
-            return node
+            where1 = list(np.where(bdarray[:9] == 1)[0])
+            where2 = list(np.where(bdarray[9:] == 1)[0])
+            node = []
+            for i in range(min(len(where1), len(where2))):
+                print("I:", i)
+                node.append(str(where1[i]))
+                node.append(str(where2[i]))
+            if len(where1) > len(where2):
+                node.append(str(where1[-1]))
+            node = "".join(node)
+            node = MCTSPlayer.rootnode + node.strip()
+            return node, False
+        else:
+            return max(equivalents, key=lambda x: self.gt.get_data(x)[1]), True
 
-            
-        else:    
-            return max(equivalents, key = lambda x : self.gt.get_data(x)[1])
-            
-        
-    
     def playout(self, board, player):
         gameover, winner = board.isGameOver()
         if gameover:
@@ -385,13 +281,16 @@ class MCTSPlayer(Player):
 
     def choose_next_level_node(self, currnode, board):
         # returns node, Terminal (bool)
-        
         children = self.gt.get_children(currnode)
+        if len(children) == 0:
+            return currnode, True
         childUCTs = list(
             map(lambda cnode: self.calcUCT(currnode, cnode, ), children))
         bestUCT = -1e6
         bestchild = "-------------"
-
+        # print("children: ", children)
+        # print("childUCTS: ", childUCTs)
+        #terminal = True
         for index in range(len(childUCTs)):
             terminal = self.is_node_terminal(children[index], board)
             if childUCTs[index] is None:
@@ -417,7 +316,6 @@ class MCTSPlayer(Player):
 
     def is_node_terminal(self, node, rootboard):
         # returns terminal, winner at current node
-
         bd = Board(rootboard.state.copy())
         for m in node[1:]:
             bd.pushMove(int(m))
@@ -435,3 +333,77 @@ class MCTSPlayer(Player):
         if self.gt.get_data(childnode)[1] == 0:
             return None
         return self.gt.get_data(childnode)[0]/self.gt.get_data(childnode)[1] + self.ep * np.sqrt(np.log(self.gt.get_data(parentnode)[1])/self.gt.get_data(childnode)[1])
+
+
+class GameTree:
+    def __init__(self):
+        self.d = dict()
+
+    def add_node(self, node, data, parent):
+        # nodeand parent are str
+        # each data is a list [score, numVisits]
+        if parent is None:
+            assert node == MCTSPlayer.rootnode
+            self.d[node] = data
+        else:
+            # print(self.d.keys())
+            assert parent in self.d.keys()
+            self.d[parent+node] = data
+
+    def get_parent(self, node):
+        # print("Node: ", node)
+        # print("keys: ", list(self.d.keys()))
+
+        try:
+            assert node in self.d.keys()
+        except:
+            print("Invalid node: `" + node + "`")
+            raise AssertionError
+
+        return node[:-1]
+
+    def get_would_be_parent(self, node):
+        return node[:-1]
+
+    def get_parents_to_root(self, node):
+        if node == ">":
+            return ">"
+        parents = [node]
+        p = None
+        c = node
+        while True:
+            if p == MCTSPlayer.rootnode:
+                break
+            p = self.get_parent(c)
+            parents.append(p)
+            c = p
+        return parents
+
+    def get_would_be_parents_to_root(self, node):
+        parents = [node]
+        p = None
+        c = node
+        while True:
+            if p == MCTSPlayer.rootnode:
+                break
+            p = self.get_would_be_parent(c)
+            parents.append(p)
+            c = p
+        return parents
+
+    def get_data(self, node):
+        assert node in self.d
+        return self.d[node]
+
+    def update_data(self, node, data):
+        assert node in self.d
+        self.d[node] = data
+
+    def get_children(self, parent):
+        return list(filter(lambda can: parent == self.get_parent(can), self.d.keys()))
+
+    def get_all_nodes(self):
+        return self.d.keys()
+
+    def node_in_tree(self, node):
+        return node in self.d.keys()

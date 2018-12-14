@@ -21,6 +21,7 @@ class Match:
             for g in range(numG):
                 if g % math.ceil(0.05 * numGames) == 0:
                     progress(games + g, numGames, status="Playing Games")
+                print()
                 winner = t.play()
                 t.reset()
                 result[winner + 1] += 1

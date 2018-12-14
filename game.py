@@ -149,9 +149,3 @@ class Board:
     def legalMoves(self):
         # returns list of legal moves
         return [i for i in range(9) if self.isLegalMove(i)]
-
-
-b = Board()
-b.pushMove(8)
-b.pushMove(4)
-b.popMoves(1)
