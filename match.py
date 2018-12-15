@@ -13,7 +13,6 @@ class Match:
         
     def play(self, numGames):
         score = np.zeros((2, 3))
-        half = 0
 
         def playHalf(p1, p2, numG, games):
             t = TicTacToe(p1, p2, verbose=self.VERBOSE)

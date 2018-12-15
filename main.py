@@ -43,19 +43,20 @@ if __name__ == "__main__":
 
     # m = MCTSPlayer(numplayouts = 20, movetime = 10, ep = 1.4142135623730950488)
 
-    m = MinimaxPlayer(ev=None, depth=9)
+    # m = MinimaxPlayer(ev=None, depth=9)
     # t = TicTacToe(r, m, verbose = True)
     # print(t.play())
-    # r = HumanPlayer()
+    m = HumanPlayer()
 
     dic = {}
 
-    for i in range(1, 10):
-        unit = 1.414/i
-        r = MCTSPlayer(numplayouts=5, movetime=5, ep=unit)
-        match = Match(m, r, True)
-        res = match.play(10)
-        dic[unit] = res
+
+    unit = 1.414
+    r = MCTSPlayer()
+
+    match = Match(r, m, True)
+    res = match.play(10)
+    dic[unit] = res
     
     print(dic)
 
